@@ -40,7 +40,7 @@
                 display: block !important;
                 position: fixed; top: 0; left: 0;
                 width: 210mm; height: 148mm;
-                padding: 10mm 15mm; 
+                padding: 6mm 12mm; 
                 background: white; color: black;
                 box-sizing: border-box;
             }
@@ -60,13 +60,13 @@
 
     <!-- Header ระบบ -->
     <header id="main-header" class="glass-header text-white shadow-xl sticky top-0 z-50 py-3 px-6 hidden">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
+        <div class="container mx-auto flex justify-between items-center text-white">
+            <div class="flex items-center gap-4 text-white">
                 <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-10 w-10 rounded-full border-2 border-white shadow">
                 <div>
                     <h1 class="font-bold text-lg leading-tight hidden md:block text-white">ทะเบียนรับบริจาค รพร.สว่างแดนดิน</h1>
-                    <div id="fund-badge" class="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block mt-1">
-                        <span id="header-fund-name"></span>
+                    <div id="fund-badge" class="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block mt-1 text-white">
+                        <span id="header-fund-name" class="text-white"></span>
                     </div>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                     </div>
 
                     <button type="button" onclick="submitData()" id="submit-btn" class="w-full text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:shadow-2xl transition-all flex justify-center items-center gap-3">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-white"></i> <span id="btn-text">บันทึกข้อมูล</span>
+                        <i data-lucide="save" class="w-6 h-6 text-white"></i> <span id="btn-text">บันทึกข้อมูล</span>
                     </button>
                     <button type="button" onclick="resetForm()" id="cancel-btn" class="hidden w-full text-red-500 text-sm font-bold py-2 text-center hover:underline">ยกเลิกการแก้ไข</button>
                 </form>
@@ -192,14 +192,14 @@
                 org: "วัดศรีสว่างแดนดิน",
                 addr: "ตำบลสว่างแดนดิน อำเภอสว่างแดนดิน จังหวัดสกลนคร",
                 signer: "พระครูยุตตธรรมมานุศาสน์ ยุตตธัมโม",
-                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดศรีสว่างแดนดิน",
+                role: "เจ้าอาวาสวัดศรีสว่างแดนดิน",
                 note: "กองทุนสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             },
             medical: {
                 org: "วัดภูตะคาม",
                 addr: "ตำบลท่าศิลา อำเภอส่องดาว จังหวัดสกลนคร",
                 signer: "พระครูเมตตาสันตยาธิคุณ",
-                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดภูตะคาม",
+                role: "เจ้าอาวาสวัดภูตะคาม",
                 note: "กองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             }
         };
@@ -228,16 +228,15 @@
             const btn = document.getElementById('submit-btn');
             const card = document.getElementById('form-card');
             const tableTitle = document.getElementById('table-title');
-            const edFields = document.getElementById('ed-specific-fields');
             
             if(m === 'ED') {
                 tableTitle.innerText = "ทะเบียน E-Donation " + fundNameFull;
-                edFields.style.display = 'block';
+                document.getElementById('ed-specific-fields').style.display = 'block';
                 btn.classList.add('bg-blue-600'); btn.classList.remove('bg-emerald-600');
                 card.classList.add('border-blue-600'); card.classList.remove('border-emerald-600');
             } else {
                 tableTitle.innerText = "ทะเบียนออกใบอนุโมทนาบัตร " + fundNameFull;
-                edFields.style.display = 'none';
+                document.getElementById('ed-specific-fields').style.display = 'none';
                 btn.classList.add('bg-emerald-600'); btn.classList.remove('bg-blue-600');
                 card.classList.add('border-emerald-600'); card.classList.remove('border-blue-600');
             }
@@ -251,10 +250,11 @@
             document.getElementById('mode-selection').classList.remove('hidden');
         }
 
+        // --- แก้ไขเรื่องวันที่และข้อมูลคลาดเคลื่อน ---
         function parseDate(str) {
             if (!str) return { d: 1, m: 1, y: 2500 };
             let s = str.toString();
-            // จัดการกรณี ISO string ที่คลาดเคลื่อน 1 วัน
+            // จัดการกรณี ISO string ที่คลาดเคลื่อน 1 วัน (มักเกิดจาก Timezone UTC)
             if (s.includes('T')) {
                 const parts = s.split('T')[0].split('-');
                 let y = parseInt(parts[0]); 
@@ -353,63 +353,70 @@
                 `;
             } else {
                 const dt = parseDate(row[5]);
-                const thaiRef = toThaiNum(row[3]);
+                // จัดการเรื่อง RefNo ที่อาจเป็นวันที่ ISO ให้แสดงผลเป็นข้อความดั้งเดิมและแปลงเป็นไทย
+                let rawRef = row[3] ? row[3].toString() : "";
+                if (rawRef.includes('T')) {
+                    // หากยังหลุดเป็น ISO ให้พยายามตัดเฉพาะส่วนหน้ามาใช้ (กรณีนี้ไม่ควรเกิดถ้าแก้ Index แล้ว)
+                    const parts = rawRef.split('T')[0].split('-');
+                    rawRef = `${parseInt(parts[2])}/${parseInt(parts[0])}`;
+                }
+                const thaiRef = toThaiNum(rawRef);
                 const thaiAmountNum = toThaiNum(Number(row[9]).toLocaleString());
                 const thaiDay = toThaiNum(dt.d);
                 const thaiYear = toThaiNum(dt.y);
 
                 printArea.innerHTML = `
-                    <div class="font-sarabun text-black relative" style="line-height: 1.55;">
+                    <div class="font-sarabun text-black relative" style="line-height: 1.4;">
                         <!-- 1. ตราธรรมจักร กึ่งกลางหัวกระดาษ -->
                         <div class="text-center mb-1">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Buddhism_dham_jak.svg/250px-Buddhism_dham_jak.svg.png" class="h-20 w-20 mx-auto object-contain">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Buddhism_dham_jak.svg/250px-Buddhism_dham_jak.svg.png" class="h-16 w-16 mx-auto object-contain">
                         </div>
 
                         <!-- 2. เลขที่ มุมขวาบน -->
-                        <div class="absolute top-2 right-2 text-right text-[12pt] font-bold">
-                            เลขที่ <span class="font-charm text-charm-blue text-[14pt]">${thaiRef}</span>
+                        <div class="absolute top-2 right-2 text-right text-[11pt] font-bold">
+                            เลขที่ <span class="font-charm text-charm-blue text-[13pt]">${thaiRef}</span>
                         </div>
 
                         <!-- 3. หัวข้อ อนุโมทนาบัตร (สีน้ำเงิน Charm) -->
                         <div class="text-center mb-4">
-                            <h2 class="font-charm text-4xl font-bold text-charm-blue mb-2">อนุโมทนาบัตร</h2>
-                            <p class="text-[14pt] font-bold">${s.org} ${s.addr}</p>
+                            <h2 class="font-charm text-3xl font-bold text-charm-blue mb-1">อนุโมทนาบัตร</h2>
+                            <p class="text-[13pt] font-bold">${s.org} ${s.addr}</p>
                         </div>
 
                         <!-- 4. เนื้อหาหลัก -->
-                        <div class="text-center space-y-4 px-10">
-                            <p class="text-[14pt]">ขออนุโมทนา แด่</p>
+                        <div class="text-center space-y-3 px-10">
+                            <p class="text-[13pt]">ขออนุโมทนา แด่</p>
                             <!-- 5. ชื่อผู้บริจาคฟอนต์ Charm สีน้ำเงิน -->
-                            <p class="font-charm text-5xl font-bold text-charm-blue py-2 leading-none">${row[6]}</p>
+                            <p class="font-charm text-4xl font-bold text-charm-blue py-1 leading-none">${row[6]}</p>
                             
-                            <!-- 6. จำนวนเงินตามบรรทัดตัวอย่าง -->
-                            <p class="text-[14pt]">
-                                บริจาคเงินจำนวน <span class="font-charm text-3xl font-bold text-charm-blue border-b-2 border-black px-6 mx-2">${thaiAmountNum}</span> บาท
-                                <span class="font-charm text-2xl font-bold text-charm-blue ml-2">(${row[10]})</span>
+                            <!-- 6. จำนวนเงินบรรทัดเดียว ปรับขนาดตัวอักษรลง -->
+                            <p class="text-[13pt]">
+                                บริจาคเงินจำนวน <span class="font-charm text-2xl font-bold text-charm-blue border-b-2 border-black px-4 mx-1">${thaiAmountNum}</span> บาท
+                                <span class="font-charm text-xl font-bold text-charm-blue ml-1">(${row[10]})</span>
                             </p>
 
-                            <p class="text-[13.5pt] leading-tight">เพื่อสมทบทุน ${row[8]}</p>
+                            <p class="text-[12pt] leading-tight">เพื่อสมทบทุน ${row[8]}</p>
 
                             <!-- 7. คำอวยพร (แก้ไข ทุด เป็น ทุก) -->
-                            <p class="text-[11.5pt] font-medium leading-relaxed px-2 italic">
+                            <p class="text-[11pt] font-medium leading-relaxed px-4">
                                 ขออำนาจคุณพระศรีรัตนตรัย และบุญกุศลบำเพ็ญนี้ จงดลบันดาลให้ท่านและครอบครัวเจริญด้วย<br>
                                 อายุ วรรณะ สุขะ พละ ปฏิภาณ ธนสานสมบัติ และประสบสิ่งอันพึงปรารถนา ตลอดกาลทุกเมื่อ เทอญ
                             </p>
 
                             <!-- 8. วันที่ -->
-                            <p class="text-[14pt] font-bold pt-1">
+                            <p class="text-[13pt] font-bold pt-1">
                                 ณ วันที่ ${thaiDay} เดือน ${thMonths[dt.m-1]} พุทธศักราช ${thaiYear}
                             </p>
                         </div>
 
-                        <!-- 9. ผู้ลงนามและข้อความกำกับ (ครบถ้วน) -->
-                        <div class="mt-8 flex flex-col items-center">
+                        <!-- 9. ผู้ลงนามและข้อความกำกับ -->
+                        <div class="mt-6 flex flex-col items-center">
                             <div class="text-center">
-                                <p class="font-bold text-[17pt] text-charm-blue mb-1">(${s.signer})</p>
-                                <p class="text-[12pt] font-bold">${s.role}</p>
+                                <p class="font-bold text-[15pt] text-charm-blue mb-1">(${s.signer})</p>
+                                <p class="text-[11.5pt] font-bold">${s.role}</p>
                             </div>
                             
-                            <div class="mt-6 text-center text-[8pt] text-gray-500 italic leading-snug">
+                            <div class="mt-4 text-center text-[7pt] text-gray-500 italic leading-snug">
                                 เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
                                 ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
                             </div>
@@ -457,7 +464,7 @@
             try {
                 const res = await fetch(`${API_URL}?action=getReport&fundType=${fundNameFull}&mode=${currentMode}`);
                 records = await res.json();
-                // จัดเรียงล่าสุดขึ้นบน (โดยใช้ Timestamp ID)
+                // จัดเรียงล่าสุดขึ้นบน (ID ล่าสุด)
                 records.sort((a, b) => b[0].toString().localeCompare(a[0].toString()));
                 renderTable(records);
             } catch (e) { console.error("Data Load Error"); }
@@ -465,10 +472,19 @@
 
         function renderTable(data) {
             const tbody = document.getElementById('quick-table-body');
-            tbody.innerHTML = data.map(row => `
+            tbody.innerHTML = data.map(row => {
+                // แก้ปัญหาเรื่อง Index และข้อมูล ISO ในตาราง
+                let displayRef = currentMode === 'ED' ? (row[4] || row[3]) : row[3];
+                if (displayRef && displayRef.toString().includes('T')) {
+                    // กู้คืนรูปแบบลำดับ/ปีพุทธศักราช หากหลุดเป็น ISO
+                    const parts = displayRef.toString().split('T')[0].split('-');
+                    displayRef = `${parseInt(parts[2])}/${parseInt(parts[0])}`;
+                }
+                
+                return `
                 <tr class="hover:bg-blue-50 transition border-b">
                     <td class="p-4 text-xs font-bold text-slate-500">${formatDateShort(row[5])}</td>
-                    <td class="p-4 font-normal text-xs text-slate-400 font-sarabun">${currentMode === 'ED' ? (row[4] || row[3]) : row[3]}</td>
+                    <td class="p-4 font-normal text-xs text-slate-400 font-sarabun">${displayRef}</td>
                     <td class="p-4 font-bold text-slate-800">${row[6]}</td>
                     <td class="p-4 flex justify-center gap-2">
                         <button onclick="printRecord('${row[0]}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="พิมพ์"><i data-lucide="printer" class="w-4 h-4"></i></button>
@@ -476,7 +492,7 @@
                         <button onclick="deleteRecord('${row[0]}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
         }
 
