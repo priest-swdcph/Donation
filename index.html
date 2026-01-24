@@ -7,15 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* บังคับใช้ Sarabun ทั้งระบบ */
+        /* บังคับใช้ Sarabun ทั้งระบบ ยกเว้นจุดที่ระบุเป็น Charm */
         * { font-family: 'Sarabun', sans-serif !important; }
+        .font-charm { font-family: 'Charm', cursive !important; }
         body { background-color: #f8fafc; margin: 0; padding: 0; }
         
         .loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px);
             display: none; justify-content: center; align-items: center; z-index: 10000;
         }
         .modern-spinner {
@@ -23,316 +24,260 @@
             border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .glass-header { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); }
+        .glass-header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
 
         /* --- สไตล์สำหรับงานพิมพ์ (A5 Landscape) --- */
         @media print {
             @page { size: A5 landscape; margin: 0; }
             html, body { height: 148mm; width: 210mm; overflow: hidden; margin: 0 !important; padding: 0 !important; }
-            
-            /* ซ่อนทุกอย่างยกเว้นพื้นที่พิมพ์ */
             body * { visibility: hidden; }
-            header, main, footer, .loader-overlay, .swal2-container { display: none !important; }
+            header, main, .loader-overlay, .swal2-container { display: none !important; }
             
-            #print-receipt, #print-receipt * { visibility: visible; }
-            #print-receipt {
+            #print-area, #print-area * { visibility: visible; }
+            #print-area {
                 display: block !important;
-                position: fixed; /* ใช้ fixed เพื่อล็อคตำแหน่งหน้าแรก */
-                top: 0; left: 0;
+                position: fixed; top: 0; left: 0;
                 width: 210mm; height: 148mm;
-                padding: 8mm 12mm; 
-                background: white; 
-                color: black; 
-                font-size: 11pt;
-                line-height: 1.3;
+                padding: 10mm 15mm; 
+                background: white; color: black;
                 box-sizing: border-box;
-                page-break-after: avoid;
-                page-break-before: avoid;
             }
             .print-blue { color: #1e3a8a !important; }
         }
-
-        #print-receipt { display: none; }
+        #print-area { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Area สำหรับพิมพ์ใบเสร็จ (A5 แนวนอน) -->
-    <div id="print-receipt" class="font-sarabun text-black relative">
-        <!-- Header Section -->
-        <div class="flex justify-between items-start border-b-2 border-black pb-1 mb-2">
-            <div class="w-[62%]">
-                <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-12 w-auto mb-1 object-contain">
-                <div class="leading-tight">
-                    <h1 class="text-lg font-bold mb-0.5" id="p-org-name">วัด...</h1>
-                    <p class="text-[8.5pt] text-gray-700" id="p-org-address">ตำบล/แขวง ... อำเภอ/เขต ... จังหวัด ...</p>
-                    <p class="text-[9.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span id="p-org-taxid" class="print-blue">...</span></p>
-                </div>
-            </div>
-            <div class="text-right w-[38%]">
-                <h2 class="text-2xl font-bold text-[#1e3a8a] mb-0">ใบรับเงินบริจาค</h2>
-                <p class="text-[8pt] font-bold text-gray-600">ระบบบริจาคอิเล็กทรอนิกส์ (e-Donation) กรมสรรพากร</p>
-                <div class="mt-2 text-[10pt] space-y-0 text-gray-800">
-                    <p>เลขที่อ้างอิง: <span id="p-receipt-no" class="font-bold print-blue">...</span></p>
-                    <p>วันที่บริจาค: <span id="p-date" class="font-bold print-blue">...</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Body Section -->
-        <div class="space-y-3 mt-4 mb-2 px-1">
-            <div class="flex items-center gap-4">
-                <span class="w-40 font-bold text-[12pt] shrink-0">ชื่อผู้บริจาค:</span>
-                <span class="flex-1 font-bold text-[15pt] print-blue leading-none" id="p-donor-name">...</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-40 font-bold text-[12pt] shrink-0 whitespace-nowrap">เลขประจำตัวผู้เสียภาษี:</span>
-                <span class="flex-1 text-[15pt] font-bold print-blue tracking-wider leading-none" id="p-donor-taxid">...</span>
-            </div>
-            <div class="flex items-start gap-4">
-                <span class="w-40 font-bold text-[12pt] shrink-0">บริจาคเพื่อ:</span>
-                <span class="flex-1 text-[12pt] print-blue leading-tight font-semibold" id="p-purpose">...</span>
-            </div>
-            <div class="flex items-center gap-4 pt-1">
-                <div class="flex flex-1 items-center gap-2">
-                    <span class="w-40 font-bold text-[12pt] shrink-0">จำนวนเงิน:</span>
-                    <span class="flex-1 font-bold text-2xl text-center print-blue border-b-2 border-black px-2" id="p-amount">0.00</span>
-                    <span class="font-bold text-[12pt]">บาท</span>
-                </div>
-                <div class="flex flex-[1.4] items-center">
-                    <span class="flex-1 text-center font-bold text-[15pt] print-blue border-b-2 border-black" id="p-amount-thai">...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer Section -->
-        <div class="grid grid-cols-2 mt-4 items-end px-1 relative min-h-[140px]">
-            <div class="text-[7.5pt] leading-tight space-y-0.5 pr-4 text-gray-600">
-                <p class="font-bold underline text-[8pt] text-black">หมายเหตุ:</p>
-                <p id="p-note-1" class="font-bold">1. ...</p>
-                <p>2. ข้อมูลบริจาคของท่านได้บันทึกในระบบ e-Donation ตรวจสอบได้ที่เว็บไซต์กรมสรรพากร (www.rd.go.th)</p>
-                <p>3. กรมสรรพากรเป็นเพียงผู้ให้บริการระบบ กรณีแก้ไขโปรดติดต่อหน่วยรับบริจาคโดยตรง</p>
-                <div class="pt-3 text-gray-400 text-[6.5pt] italic">
-                    <p>วันที่พิมพ์เอกสาร: <span id="p-print-timestamp">...</span></p>
-                </div>
-            </div>
-
-            <div class="flex flex-col items-end">
-                <div class="text-center w-full max-w-[340px]">
-                    <p class="font-bold text-[15pt] print-blue mb-1" id="p-signer-full-name">(...)</p>
-                    <p class="text-[11pt] font-bold">ผู้มีอำนาจลงนาม</p>
-                    <div class="mt-3">
-                        <p class="text-[7pt] text-gray-500 italic leading-snug">
-                            เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
-                            ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
-                        </p>
-                    </div>
-                </div>
-                <div class="absolute bottom-[-5px] right-[-5px]">
-                    <img src="https://img2.pic.in.th/RD.png" class="h-14 w-14 object-contain opacity-80">
-                </div>
-            </div>
-        </div>
+    <!-- พื้นที่สำหรับพิมพ์เอกสาร -->
+    <div id="print-area">
+        <!-- เนื้อหาจะถูกฉีดเข้ามาด้วย JavaScript ตามประเภทเอกสารที่เลือก -->
     </div>
 
-    <!-- UI หน้าเว็บ -->
-    <div id="loader" class="loader-overlay">
-        <div class="text-center">
-            <div class="modern-spinner mx-auto mb-4"></div>
-            <p class="text-blue-700 font-bold text-lg animate-pulse">กำลังดำเนินการ...</p>
-        </div>
-    </div>
+    <!-- UI หน้าเว็บปกติ -->
+    <div id="loader" class="loader-overlay"><div class="modern-spinner"></div></div>
 
+    <!-- Header เมื่อเข้าระบบแล้ว -->
     <header id="main-header" class="glass-header text-white shadow-xl sticky top-0 z-50 py-3 px-6 hidden">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-12 w-12 rounded-full border-2 border-white shadow">
+                <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-10 w-10 rounded-full border-2 border-white shadow">
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">ทะเบียนรับบริจาค รพร.สว่างแดนดิน</h1>
-                    <div id="fund-badge" class="mt-1 inline-block bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                        ระบบ: <span id="header-fund-name"></span>
+                    <h1 class="font-bold text-lg leading-tight hidden md:block">ทะเบียนรับบริจาค รพร.สว่างแดนดิน</h1>
+                    <div id="fund-badge" class="bg-white/20 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block mt-1">
+                        <span id="header-fund-name"></span>
                     </div>
                 </div>
             </div>
             <nav class="flex items-center gap-3">
-                <button onclick="showSection('form')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> บันทึกข้อมูล
-                </button>
-                <button onclick="showSection('report')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> รายงาน
-                </button>
-                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl transition font-bold shadow-lg text-sm">ออกจากระบบ</button>
+                <button onclick="backToModeSelection()" class="hover:bg-white/20 p-2 rounded-lg transition" title="สลับโหมด"><i data-lucide="layout-grid" class="w-6 h-6 text-white"></i></button>
+                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl font-bold text-xs shadow-lg transition">ออกจากระบบ</button>
             </nav>
         </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-6">
+        <!-- 1. หน้าเลือกกองทุน -->
         <div id="fund-selection" class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-            <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-24 mb-6 drop-shadow-2xl">
-            <h2 class="text-3xl font-black text-slate-800 mb-2">ยินดีต้อนรับเข้าสู่ระบบทะเบียนบริจาค</h2>
-            <p class="text-slate-500 mb-10 text-lg font-medium italic">รพ.สมเด็จพระยุพราชสว่างแดนดิน จ.สกลนคร</p>
+            <h2 class="text-3xl font-black text-slate-800 mb-10">ระบบทะเบียนรับบริจาค โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-4xl px-4">
                 <div onclick="selectFund('sangha')" class="group cursor-pointer bg-white p-10 rounded-[2.5rem] shadow-xl hover:shadow-orange-200 transition-all border-t-[12px] border-orange-500 hover:-translate-y-2">
                     <img src="https://img5.pic.in.th/file/secure-sv1/LOGO-cafca2d6a59fd064.png" class="h-32 mx-auto mb-6 group-hover:scale-110 transition">
-                    <h3 class="text-2xl font-black text-orange-600 uppercase tracking-tight">กองทุนสงฆ์อาพาธ</h3>
+                    <h3 class="text-2xl font-black text-orange-600">กองทุนสงฆ์อาพาธ</h3>
                 </div>
                 <div onclick="selectFund('medical')" class="group cursor-pointer bg-white p-10 rounded-[2.5rem] shadow-xl hover:shadow-blue-200 transition-all border-t-[12px] border-blue-600 hover:-translate-y-2">
                     <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_2.jpg" class="h-32 mx-auto mb-6 group-hover:scale-110 transition">
-                    <h3 class="text-2xl font-black text-blue-700 uppercase tracking-tight">กองทุนเครื่องมือแพทย์</h3>
+                    <h3 class="text-2xl font-black text-blue-700">กองทุนเครื่องมือแพทย์</h3>
                 </div>
             </div>
         </div>
 
-        <div id="section-form" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
+        <!-- 2. หน้าเลือกโหมดการทำงาน -->
+        <div id="mode-selection" class="hidden flex flex-col items-center justify-center min-h-[70vh] text-center">
+            <h2 class="text-2xl font-bold mb-8 text-slate-700">เลือกประเภทงาน <span id="target-fund-name" class="text-blue-600"></span></h2>
+            <div class="flex flex-wrap justify-center gap-8">
+                <button onclick="enterMode('ED')" class="bg-blue-800 text-white p-10 rounded-3xl shadow-xl w-72 hover:bg-blue-900 transition transform hover:scale-105">
+                    <i data-lucide="zap" class="mx-auto w-14 h-14 mb-4"></i>
+                    <div class="text-2xl font-bold">E-Donation</div>
+                    <p class="text-sm opacity-70 mt-2">ระบบบันทึกอิเล็กทรอนิกส์</p>
+                </button>
+                <button onclick="enterMode('CM')" class="bg-emerald-700 text-white p-10 rounded-3xl shadow-xl w-72 hover:bg-emerald-800 transition transform hover:scale-105">
+                    <i data-lucide="scroll" class="mx-auto w-14 h-14 mb-4"></i>
+                    <div class="text-2xl font-bold">ใบอนุโมทนาบัตร</div>
+                    <p class="text-sm opacity-70 mt-2">ใบรับบริจาคแบบธรรมดา</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. หน้าจอหลัก (Split Screen) -->
+        <div id="main-content" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
+            <!-- ฝั่งซ้าย: ทะเบียน -->
             <div class="lg:col-span-7 bg-white rounded-3xl shadow-xl border overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-center gap-4">
                     <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                        <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-600"></i>
+                        <i data-lucide="archive" class="w-5 h-5 text-blue-600"></i>
                         <span id="table-title">ทะเบียนล่าสุด</span>
                     </h3>
                     <div class="relative w-full md:w-64">
                         <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInput" oninput="filterTable()" placeholder="ค้นชื่อ / เลขใบเสร็จ..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-full focus:ring-2 focus:ring-blue-400 outline-none">
+                        <input type="text" id="searchInput" oninput="filterTable()" placeholder="ค้นชื่่อ / เลขที่..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-full focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
                 </div>
                 <div class="table-container overflow-y-auto max-h-[620px]">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-800 text-white text-xs uppercase sticky top-0 z-10">
+                        <thead class="bg-slate-800 text-white text-xs uppercase sticky top-0 z-10 font-sarabun">
                             <tr>
-                                <th class="p-4">วันที่บริจาค</th>
-                                <th class="p-4">เลขใบรับเงิน</th>
+                                <th class="p-4">วันที่</th>
+                                <th class="p-4">เลขที่อ้างอิง</th>
                                 <th class="p-4">ชื่อผู้บริจาค</th>
                                 <th class="p-4 text-center">จัดการ</th>
                             </tr>
                         </thead>
-                        <tbody id="quick-table" class="divide-y text-sm"></tbody>
+                        <tbody id="quick-table-body" class="divide-y text-sm"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="lg:col-span-5 bg-white rounded-3xl shadow-2xl p-6 md:p-8 border-t-8 border-blue-600">
+            <!-- ฝั่งขวา: แบบฟอร์ม -->
+            <div class="lg:col-span-5 bg-white rounded-3xl shadow-2xl p-6 md:p-8 border-t-8" id="form-card">
                 <h3 id="form-title" class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📝 บันทึกข้อมูลใหม่</h3>
                 <form id="donationForm" class="space-y-4">
                     <input type="hidden" id="edit-id">
-                    <div>
-                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">เลขที่รับเงิน (E-DONATION)</label>
-                        <input type="text" id="receiptNo" class="w-full p-3 bg-slate-100 border rounded-xl outline-none focus:border-blue-500 font-medium" required>
+                    
+                    <div id="ed-specific-fields">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-1">เลขที่รับเงิน (E-DONATION)</label>
+                        <input type="text" id="receiptNo" class="w-full p-3 bg-slate-100 border rounded-xl outline-none focus:border-blue-500 mb-4 font-bold">
+                        
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-1">เลขประจำตัวผู้เสียภาษี</label>
+                        <input type="text" id="taxId" class="w-full p-3 bg-slate-100 border rounded-xl mb-4 font-bold" maxlength="13">
                     </div>
+
                     <div>
-                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">วันที่บริจาค (พ.ศ.)</label>
-                        <input type="text" id="dateInput" class="w-full p-3 bg-slate-100 border rounded-xl" placeholder="วว/ดด/ปปปป">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-1">วันที่บริจาค (พ.ศ.)</label>
+                        <input type="text" id="dateInput" class="w-full p-3 bg-slate-100 border rounded-xl mb-4 font-bold" placeholder="วว/ดด/ปปปป">
                     </div>
+                    
                     <div>
-                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">ชื่อ-สกุลผู้บริจาค</label>
+                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase">ชื่อ-สกุลผู้บริจาค</label>
                         <input type="text" id="donorName" class="w-full p-3 bg-slate-100 border rounded-xl outline-none focus:border-blue-500 font-bold text-lg" required>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">เลขประจำตัวผู้เสียภาษี</label>
-                        <input type="text" id="taxId" class="w-full p-3 bg-slate-100 border rounded-xl" maxlength="13">
+                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase">บริจาคเพื่อ</label>
+                        <textarea id="purpose" rows="2" class="w-full p-3 bg-slate-100 border rounded-xl text-sm italic font-medium"></textarea>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider text-blue-600">จำนวนเงิน (บาท)</label>
-                        <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-4xl font-black text-blue-700 outline-none text-center">
+                        <label class="block text-xs font-black text-blue-600 uppercase">จำนวนเงิน (บาท)</label>
+                        <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-4xl font-black text-blue-700 text-center outline-none">
                         <p id="amountThai" class="mt-2 text-sm text-blue-600 font-bold h-4 italic text-center"></p>
                     </div>
-                    <button type="button" onclick="submitData()" id="submit-btn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 transition-all flex justify-center items-center gap-3">
-                        <i data-lucide="check-circle" class="w-6 h-6"></i> <span>บันทึกข้อมูลบริจาค</span>
+
+                    <button type="button" onclick="submitData()" id="submit-btn" class="w-full text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:shadow-2xl transition-all flex justify-center items-center gap-3">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-white"></i> <span id="btn-text">บันทึกข้อมูล</span>
                     </button>
-                    <button type="button" onclick="resetForm()" id="cancel-btn" class="hidden w-full text-red-500 text-sm font-bold hover:underline py-2">ยกเลิกการแก้ไข</button>
+                    <button type="button" onclick="resetForm()" id="cancel-btn" class="hidden w-full text-red-500 text-sm font-bold py-2 text-center hover:underline">ยกเลิกการแก้ไข</button>
                 </form>
             </div>
         </div>
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby-y6yAxJfU_0odsmq5OTpTir62XNjXqwR9a4oI0py9pTYnW5qu3jvYPpj8P3pH5Pex/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycby-y6yAxJfU_0odsmq5OTpTir62XNjXqwR9a4oI0py9pTYnW5qu3jvYPpj8P3pH5Pex/exec";
         let currentFund = "";
         let fundNameFull = "";
-        let isEditMode = false;
+        let currentMode = ""; // ED or CM
         let records = [];
+        let isEditMode = false;
 
         const SETTINGS = {
             sangha: {
                 org: "วัดศรีสว่างแดนดิน",
-                addr: "ตำบล/แขวง สว่างแดนดิน อำเภอ/เขต สว่างแดนดิน จังหวัด สกลนคร",
+                addr: "ตำบลสว่างแดนดิน อำเภอสว่างแดนดิน จังหวัดสกลนคร",
                 tax: "0994002071903",
-                signer: "พระครูยุตตธรรมมานุศาสน์",
+                signer: "พระครูยุตตธรรมานุศาน์ ยุตตธมโม",
+                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดศรีสว่างแดนดิน",
                 note: "กองทุนสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             },
             medical: {
-                org: "วัดป่าสันตินิมิต",
-                addr: "ตำบล/แขวง เป๊าะ อำเภอ/เขต บึงบูรพ์ จังหวัด ศรีสะเกษ",
+                org: "วัดภูตะคาม",
+                addr: "ตำบลท่าศิลา อำเภอส่องดาว จังหวัดสกลนคร",
                 tax: "0994002568336",
                 signer: "พระครูเมตตาสันตยาธิคุณ",
-                note: "กองทุนเพื่อจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
+                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดภูตะคาม",
+                note: "กองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             }
         };
 
-        function toggleLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
+        const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
-        function selectFund(type) {
-            toggleLoader(true);
-            setTimeout(() => {
-                currentFund = type;
-                fundNameFull = type === 'sangha' ? 'กองทุนสงฆ์อาพาธ' : 'กองทุนเครื่องมือแพทย์';
-                document.getElementById('fund-selection').classList.add('hidden');
-                document.getElementById('main-header').classList.remove('hidden');
-                document.getElementById('section-form').classList.remove('hidden');
-                document.getElementById('header-fund-name').innerText = fundNameFull;
-                document.getElementById('table-title').innerText = "ทะเบียนล่าสุด: " + fundNameFull;
-                resetForm();
-                loadReport();
-                toggleLoader(false);
-                lucide.createIcons();
-            }, 600);
-        }
+        function toggleLoader(s) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; }
+        function toThaiNum(n) { return n.toString().replace(/\d/g, d => "๐๑๒๓๔๕๖๗๘๙"[d]); }
 
-        function showSection(name) {
-            ['form', 'report'].forEach(s => {
-              const el = document.getElementById('section-' + s);
-              if (el) el.classList.add('hidden');
-            });
-            const target = document.getElementById('section-' + name);
-            if (target) target.classList.remove('hidden');
+        function selectFund(f) {
+            currentFund = f;
+            fundNameFull = (f === 'sangha') ? 'กองทุนสงฆ์อาพาธ' : 'กองทุนเครื่องมือแพทย์';
+            document.getElementById('fund-selection').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+            document.getElementById('target-fund-name').innerText = fundNameFull;
             lucide.createIcons();
         }
 
-        // --- แก้ไขปัญหาเรื่องวันที่คลาดเคลื่อน: ใช้ String Splitting เพื่อความแม่นยำ ---
+        function enterMode(m) {
+            currentMode = m;
+            document.getElementById('mode-selection').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('header-fund-name').innerText = (m === 'ED' ? 'E-DONATION' : 'ใบอนุโมทนา') + ': ' + fundNameFull;
+            
+            const btn = document.getElementById('submit-btn');
+            const card = document.getElementById('form-card');
+            const tableTitle = document.getElementById('table-title');
+            const edFields = document.getElementById('ed-specific-fields');
+            
+            if(m === 'ED') {
+                tableTitle.innerText = "ทะเบียน E-Donation " + fundNameFull;
+                edFields.style.display = 'block';
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                card.classList.add('border-blue-600');
+                card.classList.remove('border-emerald-600');
+            } else {
+                tableTitle.innerText = "ทะเบียนออกใบอนุโมทนาบัตร " + fundNameFull;
+                edFields.style.display = 'none';
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                card.classList.add('border-emerald-600');
+                card.classList.remove('border-blue-600');
+            }
+            resetForm();
+            loadReport();
+        }
+
+        function backToModeSelection() {
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+        }
+
         function parseDate(str) {
-            if (!str) return new Date();
+            if (!str) return { d: 1, m: 1, y: 2500 };
             let s = str.toString();
             if (s.includes('T')) {
-                // ตัดเฉพาะ YYYY-MM-DD เพื่อเลี่ยง Timezone Offset
                 const parts = s.split('T')[0].split('-');
-                return { y: parseInt(parts[0]), m: parseInt(parts[1]), d: parseInt(parts[2]) };
+                let y = parseInt(parts[0]); if(y < 2500) y += 543;
+                return { y: y, m: parseInt(parts[1]), d: parseInt(parts[2]) };
             }
             if (s.includes('/')) {
                 const parts = s.split('/');
-                let y = parseInt(parts[2]);
-                if (y > 2500) y -= 543;
-                return { y: y, m: parseInt(parts[1]), d: parseInt(parts[0]) };
+                return { d: parseInt(parts[0]), m: parseInt(parts[1]), y: parseInt(parts[2]) };
             }
-            const dObj = new Date(s);
-            return { y: dObj.getFullYear(), m: dObj.getMonth() + 1, d: dObj.getDate() };
+            return { d: 1, m: 1, y: 2500 };
         }
 
         function formatDateShort(str) {
-            if(!str) return "-";
             const dt = parseDate(str);
-            const d = dt.d.toString().padStart(2, '0');
-            const m = dt.m.toString().padStart(2, '0');
-            let y = dt.y;
-            if (y < 2500) y += 543;
-            return `${d}/${m}/${y}`;
-        }
-
-        function formatDateThaiFull(dateStr) {
-            if (!dateStr) return "-";
-            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            const dt = parseDate(dateStr);
-            let y = dt.y;
-            if (y < 2500) y += 543;
-            return `${dt.d} ${months[dt.m - 1]} ${y}`;
+            return `${dt.d.toString().padStart(2, '0')}/${dt.m.toString().padStart(2, '0')}/${dt.y}`;
         }
 
         function printRecord(id) {
@@ -340,22 +285,111 @@
             if (!row) return;
 
             const s = SETTINGS[currentFund];
-            const now = new Date();
-            const timestamp = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
-            
-            document.getElementById('p-org-name').innerText = s.org;
-            document.getElementById('p-org-address').innerText = s.addr;
-            document.getElementById('p-org-taxid').innerText = s.tax;
-            document.getElementById('p-receipt-no').innerText = row[2];
-            document.getElementById('p-date').innerText = formatDateThaiFull(row[3]);
-            document.getElementById('p-donor-name').innerText = row[4];
-            document.getElementById('p-donor-taxid').innerText = row[5] || "-";
-            document.getElementById('p-purpose').innerText = row[6];
-            document.getElementById('p-amount').innerText = Number(row[7]).toLocaleString(undefined, {minimumFractionDigits: 2});
-            document.getElementById('p-amount-thai').innerText = row[8];
-            document.getElementById('p-signer-full-name').innerText = "(" + s.signer + ")";
-            document.getElementById('p-note-1').innerText = "1. " + s.note;
-            document.getElementById('p-print-timestamp').innerText = timestamp;
+            const printArea = document.getElementById('print-area');
+
+            if (currentMode === 'ED') {
+                // พิมพ์ E-Donation
+                const now = new Date();
+                const timestamp = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
+                printArea.innerHTML = `
+                    <div class="flex justify-between items-start border-b-2 border-black pb-1 mb-2">
+                        <div class="w-[62%]">
+                            <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-12 w-auto mb-1 object-contain">
+                            <div class="leading-tight">
+                                <h1 class="text-lg font-bold mb-0.5">${s.org}</h1>
+                                <p class="text-[8.5pt] text-gray-700">${s.addr}</p>
+                                <p class="text-[9.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span class="print-blue">${s.tax}</span></p>
+                            </div>
+                        </div>
+                        <div class="text-right w-[38%]">
+                            <h2 class="text-2xl font-bold text-[#1e3a8a] mb-0">ใบรับเงินบริจาค</h2>
+                            <p class="text-[8pt] font-bold text-gray-600">ระบบบริจาคอิเล็กทรอนิกส์ (e-Donation) กรมสรรพากร</p>
+                            <div class="mt-2 text-[10pt] space-y-0 text-gray-800">
+                                <p>เลขที่อ้างอิง: <span class="font-bold print-blue">${row[4]}</span></p>
+                                <p>วันที่บริจาค: <span class="font-bold print-blue">${formatDateThaiFull(row[5])}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 mt-6 mb-2 px-1">
+                        <div class="flex items-center gap-4">
+                            <span class="w-40 font-bold text-[12pt] shrink-0">ชื่อผู้บริจาค:</span>
+                            <span class="flex-1 font-bold text-[16pt] print-blue leading-none">${row[6]}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="w-40 font-bold text-[12pt] shrink-0 whitespace-nowrap">เลขประจำตัวผู้เสียภาษี:</span>
+                            <span class="flex-1 text-[16pt] font-bold print-blue tracking-wider leading-none">${row[7]}</span>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <span class="w-40 font-bold text-[12pt] shrink-0">บริจาคเพื่อ:</span>
+                            <span class="flex-1 text-[12pt] print-blue leading-tight font-semibold">${row[8]}</span>
+                        </div>
+                        <div class="flex items-center gap-4 pt-1">
+                            <div class="flex flex-1 items-center gap-2">
+                                <span class="w-40 font-bold text-[12pt] shrink-0">จำนวนเงิน:</span>
+                                <span class="flex-1 font-bold text-2xl text-center print-blue border-b-2 border-black px-2">${Number(row[9]).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                <span class="font-bold text-[12pt]">บาท</span>
+                            </div>
+                            <div class="flex flex-[1.4] items-center ml-4">
+                                <span class="flex-1 text-center font-bold text-[16pt] print-blue border-b-2 border-black">${row[10]}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 mt-8 items-end min-h-[140px]">
+                        <div class="text-[7.5pt] leading-tight space-y-0.5 pr-4 text-gray-600">
+                            <p class="font-bold underline text-[8pt] text-black">หมายเหตุ:</p>
+                            <p class="font-bold">1. ${s.note}</p>
+                            <p>2. ข้อมูลบริจาคของท่านได้บันทึกในระบบ e-Donation ตรวจสอบได้ที่เว็บไซต์กรมสรรพากร (www.rd.go.th)</p>
+                            <p>3. กรมสรรพากรเป็นเพียงผู้ให้บริการระบบ กรณีแก้ไขโปรดติดต่อหน่วยรับบริจาคโดยตรง</p>
+                            <div class="pt-3 text-gray-400 text-[6.5pt] italic">วันที่พิมพ์เอกสาร: ${timestamp}</div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <div class="text-center w-full max-w-[340px]">
+                                <p class="font-bold text-[16pt] print-blue mb-1">(${s.signer})</p>
+                                <p class="text-[11pt] font-bold">ผู้มีอำนาจลงนาม</p>
+                                <div class="mt-3">
+                                    <p class="text-[7pt] text-gray-500 italic leading-snug">
+                                        เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
+                                        ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-[-5px] right-[-5px]"><img src="https://img2.pic.in.th/RD.png" class="h-16 w-16 object-contain opacity-80"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // พิมพ์ใบอนุโมทนาธรรมดา
+                const dt = parseDate(row[5]);
+                printArea.innerHTML = `
+                    <div class="text-center">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="w-24"></div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Buddhism_dham_jak.svg" class="h-20 w-20 mx-auto">
+                            <div class="text-right text-[11pt] font-bold">เลขที่ ${toThaiNum(row[3])}</div>
+                        </div>
+                        <h2 class="font-charm text-4xl font-bold mb-4">อนุโมทนาบัตร</h2>
+                        <div class="text-lg leading-relaxed space-y-2 px-6">
+                            <p class="font-bold text-xl">${s.org} ${s.addr}</p>
+                            <p class="text-lg">ขออนุโมทนา แด่</p>
+                            <p class="font-charm text-4xl font-bold text-blue-900 py-2">${row[6]}</p>
+                            <p class="text-xl">ได้บริจาคเงินจำนวน <span class="font-bold text-2xl border-b-2 border-black px-6 mx-2">${toThaiNum(Number(row[9]).toLocaleString())}</span> บาท</p>
+                            <p class="font-bold text-lg">(${row[10]})</p>
+                            <p class="text-[12pt] leading-tight pt-2">บริจาคเพื่อ ${row[8]}</p>
+                            <p class="text-[11pt] px-8 pt-4 leading-snug">
+                                ขออำนาจคุณพระศรีรัตนตรัย และบุญกุศลบำเพ็ญนี้ จงดลบันดาลให้ท่านและครอบครัวเจริญด้วยอายุ วรรณะ สุขะ พละ ปฏิภาณ ธนสานสมบัติ และประสบสิ่งอันพึงปรารถนา ตลอดกาลทุกเมื่อ เทอญ
+                            </p>
+                            <p class="pt-4 text-[13pt] font-bold">ณ วันที่ ${toThaiNum(dt.d)} เดือน ${thMonths[dt.m-1]} พุทธศักราช ${toThaiNum(dt.y)}</p>
+                        </div>
+                        <div class="mt-8 flex flex-col items-center">
+                            <div class="text-center">
+                                <p class="font-bold text-2xl mb-1">(${s.signer})</p>
+                                <p class="text-[12pt] font-bold">${s.role}</p>
+                            </div>
+                            <p class="text-[8pt] text-gray-500 mt-6 italic">เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ</p>
+                        </div>
+                    </div>
+                `;
+            }
 
             setTimeout(() => { window.print(); }, 250);
         }
@@ -364,17 +398,18 @@
             const data = {
                 id: document.getElementById('edit-id').value,
                 fundType: fundNameFull,
+                mode: currentMode,
                 receiptNo: document.getElementById('receiptNo').value,
                 date: document.getElementById('dateInput').value,
                 name: document.getElementById('donorName').value,
                 taxId: document.getElementById('taxId').value,
-                purpose: fundNameFull === 'กองทุนสงฆ์อาพาธ' ? "สมทบทุนกองทุนหอสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน" : "สมทบทุนกองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน",
+                purpose: document.getElementById('purpose').value,
                 amount: document.getElementById('amount').value,
                 amountThai: document.getElementById('amountThai').innerText
             };
 
-            if(!data.receiptNo || !data.name || !data.amount) {
-                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่จำเป็น', 'warning');
+            if(!data.name || !data.amount || !data.date) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกวันที่ ชื่อ และจำนวนเงิน', 'warning');
                 return;
             }
 
@@ -384,7 +419,7 @@
                     method: 'POST',
                     body: JSON.stringify({ action: isEditMode ? 'update' : 'save', data: data })
                 });
-                Swal.fire({ icon: 'success', title: 'สำเร็จ!', showConfirmButton: false, timer: 1500 });
+                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', showConfirmButton: false, timer: 1500 });
                 resetForm();
                 loadReport();
             } catch (e) { Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'โปรดลองอีกครั้ง' }); }
@@ -393,24 +428,21 @@
 
         async function loadReport() {
             try {
-                const res = await fetch(`${API_URL}?action=getReport&fundType=${fundNameFull}`);
+                const res = await fetch(`${API_URL}?action=getReport&fundType=${fundNameFull}&mode=${currentMode}`);
                 records = await res.json();
-                
-                // --- จัดเรียงข้อมูลโดยเอา ID ล่าสุดขึ้นก่อน ---
+                // จัดเรียงล่าสุดขึ้นบน (ID ล่าสุด)
                 records.sort((a, b) => b[0].toString().localeCompare(a[0].toString()));
-                
                 renderTable(records);
             } catch (e) { console.error("Data Load Error"); }
         }
 
         function renderTable(data) {
-            const tbody = document.getElementById('quick-table');
-            // ข้อมูลถูก Sort มาจาก loadReport แล้ว ไม่ต้อง reverse ซ้ำที่นี่
+            const tbody = document.getElementById('quick-table-body');
             tbody.innerHTML = data.map(row => `
                 <tr class="hover:bg-blue-50 transition border-b">
-                    <td class="p-4 text-xs font-bold text-slate-500">${formatDateShort(row[3])}</td>
-                    <td class="p-4 font-normal text-xs text-slate-400 font-sarabun">${row[2]}</td>
-                    <td class="p-4 font-bold text-slate-800">${row[4]}</td>
+                    <td class="p-4 text-xs font-bold text-slate-500">${formatDateShort(row[5])}</td>
+                    <td class="p-4 font-normal text-xs text-slate-400">${currentMode === 'ED' ? (row[4] || row[3]) : row[3]}</td>
+                    <td class="p-4 font-bold text-slate-800">${row[6]}</td>
                     <td class="p-4 flex justify-center gap-1">
                         <button onclick="printRecord('${row[0]}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="พิมพ์"><i data-lucide="printer" class="w-4 h-4"></i></button>
                         <button onclick="editRecord('${row[0]}')" class="p-2 text-amber-500 hover:bg-amber-100 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
@@ -426,14 +458,15 @@
             if(!row) return;
             isEditMode = true;
             document.getElementById('edit-id').value = row[0];
-            document.getElementById('receiptNo').value = row[2];
-            document.getElementById('dateInput').value = formatDateShort(row[3]);
-            document.getElementById('donorName').value = row[4];
-            document.getElementById('taxId').value = row[5];
-            document.getElementById('amount').value = row[7];
-            updateThaiText(row[7]);
+            document.getElementById('receiptNo').value = row[4];
+            document.getElementById('dateInput').value = formatDateShort(row[5]);
+            document.getElementById('donorName').value = row[6];
+            document.getElementById('taxId').value = row[7];
+            document.getElementById('purpose').value = row[8];
+            document.getElementById('amount').value = row[9];
+            updateThaiText(row[9]);
             document.getElementById('form-title').innerText = "✏️ แก้ไขข้อมูล";
-            document.getElementById('submit-btn').querySelector('span').innerText = "อัปเดตข้อมูลบริจาค";
+            document.getElementById('btn-text').innerText = "อัปเดตข้อมูล";
             document.getElementById('cancel-btn').classList.remove('hidden');
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -455,10 +488,17 @@
             document.getElementById('donationForm').reset();
             document.getElementById('edit-id').value = "";
             document.getElementById('form-title').innerText = "📝 เพิ่มข้อมูลใหม่";
-            document.getElementById('submit-btn').querySelector('span').innerText = "บันทึกข้อมูลบริจาค";
+            document.getElementById('btn-text').innerText = "บันทึกข้อมูล";
             document.getElementById('cancel-btn').classList.add('hidden');
             document.getElementById('amountThai').innerText = "";
             
+            // Set Default Purpose
+            if (currentFund === 'sangha') {
+                document.getElementById('purpose').value = "สมทบทุนกองทุนหอสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
+            } else {
+                document.getElementById('purpose').value = "สมทบทุนกองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
+            }
+
             const now = new Date();
             const thaiYear = now.getFullYear() + 543;
             const day = now.getDate().toString().padStart(2, '0');
@@ -501,9 +541,15 @@
             d.innerText = "(" + arabicToThaiText(parseFloat(v)) + ")";
         }
 
+        function formatDateThaiFull(dateStr) {
+            if (!dateStr) return "-";
+            const dt = parseDate(dateStr);
+            return `${dt.d} ${thMonths[dt.m - 1]} ${dt.y}`;
+        }
+
         function filterTable() {
             const k = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = records.filter(r => r[4].toLowerCase().includes(k) || r[2].toLowerCase().includes(k));
+            const filtered = records.filter(r => r[6].toLowerCase().includes(k) || (r[3] && r[3].toString().includes(k)) || (r[4] && r[4].toString().includes(k)));
             renderTable(filtered);
         }
 
