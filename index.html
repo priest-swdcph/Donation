@@ -9,9 +9,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        /* บังคับใช้ Sarabun ทั้งระบบ */
+        * { font-family: 'Sarabun', sans-serif !important; }
+        body { background-color: #f8fafc; }
         
-        /* สไตล์หน้าเว็บปกติ */
         .loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
@@ -23,8 +24,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .glass-header { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); }
-        .table-container::-webkit-scrollbar { width: 6px; }
-        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
         /* --- สไตล์สำหรับงานพิมพ์ (A5 Landscape) --- */
         @media print {
@@ -34,14 +33,11 @@
             #print-receipt {
                 display: block !important;
                 position: absolute; left: 0; top: 0; width: 210mm; height: 148mm;
-                padding: 5mm 10mm; background: white; color: black; font-size: 11pt;
-                line-height: 1.4;
+                padding: 6mm 10mm; background: white; color: black; font-size: 11pt;
+                line-height: 1.35;
                 visibility: visible;
             }
-            .no-print { display: none !important; }
             .print-blue { color: #1e3a8a !important; }
-            /* บังคับใช้ Sarabun ทุกจุด */
-            * { font-family: 'Sarabun', sans-serif !important; }
         }
 
         #print-receipt { display: none; }
@@ -53,17 +49,20 @@
     <div id="print-receipt" class="font-sarabun text-black relative">
         <!-- Header Section -->
         <div class="flex justify-between items-start border-b-2 border-black pb-1 mb-2">
-            <div class="w-[60%]">
-                <!-- ปรับขนาดโลโก้ให้เล็กลง -->
-                <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-14 w-auto mb-1 object-contain">
-                <h1 class="text-xl font-bold leading-none" id="p-org-name">วัด...</h1>
-                <p class="text-[9pt] leading-tight text-gray-700" id="p-org-address">ตำบล/แขวง ... อำเภอ/เขต ... จังหวัด ...</p>
-                <p class="text-[10pt] font-bold">เลขที่หน่วยรับบริจาค: <span id="p-org-taxid" class="print-blue">...</span></p>
+            <div class="w-[62%]">
+                <!-- โลโก้ขนาดเล็กลง -->
+                <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-12 w-auto mb-1 object-contain">
+                <!-- ข้อมูลวัดอยู่ใต้โลโก้ -->
+                <div class="leading-tight">
+                    <h1 class="text-lg font-bold mb-0.5" id="p-org-name">วัด...</h1>
+                    <p class="text-[8.5pt] text-gray-700" id="p-org-address">ตำบล/แขวง ... อำเภอ/เขต ... จังหวัด ...</p>
+                    <p class="text-[9.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span id="p-org-taxid" class="print-blue">...</span></p>
+                </div>
             </div>
-            <div class="text-right w-[40%]">
+            <div class="text-right w-[38%]">
                 <h2 class="text-2xl font-bold text-[#1e3a8a] mb-0">ใบรับเงินบริจาค</h2>
-                <p class="text-[7.5pt] font-bold uppercase tracking-tight text-gray-400">E-DONATION SYSTEM (REVENUE DEPT.)</p>
-                <div class="mt-2 text-[10pt] space-y-0">
+                <p class="text-[8pt] font-bold text-gray-600">ระบบบริจาคอิเล็กทรอนิกส์ (e-Donation) กรมสรรพากร</p>
+                <div class="mt-2 text-[10pt] space-y-0 text-gray-800">
                     <p>เลขที่อ้างอิง: <span id="p-receipt-no" class="font-bold print-blue">...</span></p>
                     <p>วันที่บริจาค: <span id="p-date" class="font-bold print-blue">...</span></p>
                 </div>
@@ -73,63 +72,63 @@
         <!-- Body Section -->
         <div class="space-y-3 mt-4 mb-2 px-1">
             <div class="flex items-center gap-4">
-                <span class="w-32 font-bold text-[12pt]">ชื่อผู้บริจาค:</span>
-                <span class="flex-1 font-bold text-[14pt] print-blue leading-none" id="p-donor-name">...</span>
+                <span class="w-40 font-bold text-[12pt] shrink-0">ชื่อผู้บริจาค:</span>
+                <span class="flex-1 font-bold text-[15pt] print-blue leading-none" id="p-donor-name">...</span>
             </div>
             <div class="flex items-center gap-4">
-                <span class="w-32 font-bold text-[12pt]">เลขประจำตัวผู้เสียภาษี:</span>
-                <span class="flex-1 text-[14pt] font-bold print-blue tracking-wider leading-none" id="p-donor-taxid">...</span>
+                <span class="w-40 font-bold text-[12pt] shrink-0 whitespace-nowrap">เลขประจำตัวผู้เสียภาษี:</span>
+                <span class="flex-1 text-[15pt] font-bold print-blue tracking-wider leading-none" id="p-donor-taxid">...</span>
             </div>
             <div class="flex items-start gap-4">
-                <span class="w-32 font-bold text-[12pt] shrink-0">บริจาคเพื่อ:</span>
+                <span class="w-40 font-bold text-[12pt] shrink-0">บริจาคเพื่อ:</span>
                 <span class="flex-1 text-[12pt] print-blue leading-tight font-semibold" id="p-purpose">...</span>
             </div>
             <div class="flex items-center gap-4 pt-1">
                 <div class="flex flex-1 items-center gap-2">
-                    <span class="w-32 font-bold text-[12pt]">จำนวนเงิน:</span>
-                    <span class="flex-1 font-bold text-2xl text-center print-blue border-b-2 border-black" id="p-amount">0.00</span>
+                    <span class="w-40 font-bold text-[12pt] shrink-0">จำนวนเงิน:</span>
+                    <span class="flex-1 font-bold text-2xl text-center print-blue border-b-2 border-black px-2" id="p-amount">0.00</span>
                     <span class="font-bold text-[12pt]">บาท</span>
                 </div>
                 <div class="flex flex-[1.4] items-center">
-                    <span class="flex-1 text-center font-bold text-[14pt] print-blue border-b-2 border-black" id="p-amount-thai">...</span>
+                    <span class="flex-1 text-center font-bold text-[15pt] print-blue border-b-2 border-black" id="p-amount-thai">...</span>
                 </div>
             </div>
         </div>
 
         <!-- Footer Section -->
-        <div class="grid grid-cols-2 mt-6 items-end px-1 relative min-h-[120px]">
-            <!-- ฝั่งซ้าย: หมายเหตุ -->
-            <div class="text-[8.5pt] leading-tight space-y-1 pr-4">
-                <p class="font-bold underline text-[9pt]">หมายเหตุ:</p>
-                <p id="p-note-1" class="font-bold text-gray-700">1. ...</p>
+        <div class="grid grid-cols-2 mt-4 items-end px-1 relative min-h-[140px]">
+            <!-- หมายเหตุตัวเล็ก -->
+            <div class="text-[7.5pt] leading-tight space-y-0.5 pr-4 text-gray-600">
+                <p class="font-bold underline text-[8pt] text-black">หมายเหตุ:</p>
+                <p id="p-note-1" class="font-bold">1. ...</p>
                 <p>2. ข้อมูลบริจาคของท่านได้บันทึกในระบบ e-Donation ตรวจสอบได้ที่เว็บไซต์กรมสรรพากร (www.rd.go.th)</p>
                 <p>3. กรมสรรพากรเป็นเพียงผู้ให้บริการระบบ กรณีแก้ไขโปรดติดต่อหน่วยรับบริจาคโดยตรง</p>
-                <div class="pt-4 text-gray-400 text-[7pt] italic">
+                <div class="pt-3 text-gray-400 text-[6.5pt] italic">
                     <p>วันที่พิมพ์เอกสาร: <span id="p-print-timestamp">...</span></p>
                 </div>
             </div>
 
-            <!-- ฝั่งขวา: ลายเซ็นและ QR Code -->
             <div class="flex flex-col items-end">
-                <div class="text-center w-full max-w-[280px]">
-                    <p class="font-bold text-[14pt] print-blue mb-1" id="p-signer-full-name">(...)</p>
+                <div class="text-center w-full max-w-[340px]">
+                    <!-- ชื่อผู้ลงนามขนาดเท่าข้อมูลบริจาค -->
+                    <p class="font-bold text-[15pt] print-blue mb-1" id="p-signer-full-name">(...)</p>
                     <p class="text-[11pt] font-bold">ผู้มีอำนาจลงนาม</p>
-                    <div class="mt-4">
+                    <div class="mt-3">
                         <p class="text-[7pt] text-gray-500 italic leading-snug">
                             เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
                             ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
                         </p>
                     </div>
                 </div>
-                <!-- ย้าย QR Code มาไว้ล่างขวา -->
-                <div class="absolute bottom-[-10px] right-[-10px] opacity-90">
-                    <img src="https://img2.pic.in.th/RD.png" class="h-16 w-16 object-contain">
+                <!-- QR Code ล่างขวา -->
+                <div class="absolute bottom-[-5px] right-[-5px]">
+                    <img src="https://img2.pic.in.th/RD.png" class="h-14 w-14 object-contain opacity-80">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ส่วน Web Application ปกติ -->
+    <!-- UI หน้าเว็บ -->
     <div id="loader" class="loader-overlay">
         <div class="text-center">
             <div class="modern-spinner mx-auto mb-4"></div>
@@ -150,7 +149,7 @@
             </div>
             <nav class="flex items-center gap-3">
                 <button onclick="showSection('form')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูล
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> บันทึกข้อมูล
                 </button>
                 <button onclick="showSection('report')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i> รายงาน
@@ -161,7 +160,6 @@
     </header>
 
     <main class="container mx-auto p-4 md:p-6">
-        <!-- หน้าแรกเลือกกองทุน -->
         <div id="fund-selection" class="flex flex-col items-center justify-center min-h-[80vh] text-center">
             <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-24 mb-6 drop-shadow-2xl">
             <h2 class="text-3xl font-black text-slate-800 mb-2">ยินดีต้อนรับเข้าสู่ระบบทะเบียนบริจาค</h2>
@@ -178,7 +176,6 @@
             </div>
         </div>
 
-        <!-- หน้าบันทึกข้อมูลหลัก -->
         <div id="section-form" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
             <div class="lg:col-span-7 bg-white rounded-3xl shadow-xl border overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-center gap-4">
@@ -193,7 +190,7 @@
                 </div>
                 <div class="table-container overflow-y-auto max-h-[620px]">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-800 text-white text-xs uppercase sticky top-0 z-10">
+                        <thead class="bg-slate-800 text-white text-xs uppercase sticky top-0 z-10 font-sarabun">
                             <tr>
                                 <th class="p-4">วันที่บริจาค</th>
                                 <th class="p-4">เลขใบรับเงิน</th>
@@ -220,7 +217,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">ชื่อ-สกุลผู้บริจาค</label>
-                        <input type="text" id="donorName" class="w-full p-3 bg-slate-100 border rounded-xl outline-none focus:border-blue-500 font-bold" required>
+                        <input type="text" id="donorName" class="w-full p-3 bg-slate-100 border rounded-xl outline-none focus:border-blue-500 font-bold text-lg" required>
                     </div>
                     <div>
                         <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider">เลขประจำตัวผู้เสียภาษี</label>
@@ -237,12 +234,6 @@
                     <button type="button" onclick="resetForm()" id="cancel-btn" class="hidden w-full text-red-500 text-sm font-bold hover:underline py-2">ยกเลิกการแก้ไข</button>
                 </form>
             </div>
-        </div>
-
-        <!-- หน้าแสดงรายงานสรุป -->
-        <div id="section-report" class="hidden bg-white p-8 rounded-3xl shadow-xl">
-            <h2 class="text-2xl font-black mb-6">📑 รายงานข้อมูลทั้งหมด</h2>
-            <div id="full-report-content" class="text-slate-500 text-center py-20 italic">ส่วนรายงานสรุปกำลังเตรียมข้อมูล...</div>
         </div>
     </main>
 
@@ -282,7 +273,6 @@
                 document.getElementById('section-form').classList.remove('hidden');
                 document.getElementById('header-fund-name').innerText = fundNameFull;
                 document.getElementById('table-title').innerText = "ทะเบียนล่าสุด: " + fundNameFull;
-                
                 resetForm();
                 loadReport();
                 toggleLoader(false);
@@ -291,39 +281,59 @@
         }
 
         function showSection(name) {
-            ['form', 'report'].forEach(s => document.getElementById('section-' + s).classList.add('hidden'));
-            document.getElementById('section-' + name).classList.remove('hidden');
+            ['form', 'report'].forEach(s => {
+              const el = document.getElementById('section-' + s);
+              if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById('section-' + name);
+            if (target) target.classList.remove('hidden');
             lucide.createIcons();
         }
 
-        // ฟอร์แมตวันที่ในตารางหน้าเว็บ
+        // --- แก้ไขเรื่องวันที่คลาดเคลื่อน ---
+        function parseDate(str) {
+            if (!str) return new Date();
+            let s = str.toString();
+            if (s.includes('T')) {
+                // กรณี ISO String: จัดการให้เป็น Local Time โดยการชดเชย Offset
+                const d = new Date(s);
+                return d;
+            }
+            if (s.includes('/')) {
+                const p = s.split('/');
+                let d = parseInt(p[0]);
+                let m = parseInt(p[1]) - 1;
+                let y = parseInt(p[2]);
+                if (y > 2500) y -= 543;
+                return new Date(y, m, d);
+            }
+            return new Date(s);
+        }
+
         function formatDateShort(str) {
             if(!str) return "-";
-            if(str.toString().includes('T')) {
-                const parts = str.toString().split('T')[0].split('-');
-                if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-            return str;
+            const date = parseDate(str);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            let year = date.getFullYear();
+            if (year < 2500) year += 543;
+            return `${day}/${month}/${year}`;
         }
 
         function formatDateThaiFull(dateStr) {
             if (!dateStr) return "-";
             const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            let d, m, y;
-            if (dateStr.toString().includes('/')) {
-                const p = dateStr.split('/'); d = p[0]; m = p[1]; y = p[2];
-            } else if (dateStr.toString().includes('-') || dateStr.toString().includes('T')) {
-                const p = dateStr.toString().split('T')[0].split('-'); d = p[2]; m = p[1]; y = p[0];
-            } else return dateStr;
-            return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+            const date = parseDate(dateStr);
+            let d = date.getDate();
+            let m = date.getMonth();
+            let y = date.getFullYear();
+            if (y < 2500) y += 543;
+            return `${parseInt(d)} ${months[m]} ${y}`;
         }
 
         function printRecord(id) {
             const row = records.find(r => String(r[0]) === String(id));
-            if (!row) {
-                Swal.fire('ไม่พบข้อมูล', 'โปรดรีโหลดหน้าเว็บแล้วลองอีกครั้ง', 'error');
-                return;
-            }
+            if (!row) return;
 
             const s = SETTINGS[currentFund];
             const now = new Date();
@@ -439,13 +449,17 @@
             document.getElementById('submit-btn').querySelector('span').innerText = "บันทึกข้อมูลบริจาค";
             document.getElementById('cancel-btn').classList.add('hidden');
             document.getElementById('amountThai').innerText = "";
-            const d = new Date();
-            document.getElementById('dateInput').value = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+            
+            const now = new Date();
+            const thaiYear = now.getFullYear() + 543;
+            const day = now.getDate().toString().padStart(2, '0');
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('dateInput').value = `${day}/${month}/${thaiYear}`;
         }
 
         function arabicToThaiText(n) {
             const d=["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"], u=["","สิบ","ร้อย","พัน","หมื่น","แสน","ล้าน"];
-            if(isNaN(n) || n == "") return "";
+            if(isNaN(n) || n === "" || n === 0) return "";
             let s=n.toString().split('.'), i=s[0], r="";
             for(let j=0;j<i.length;j++){
                 let v=parseInt(i[j]), p=i.length-j-1;
