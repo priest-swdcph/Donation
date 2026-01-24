@@ -7,11 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- เพิ่มฟอนต์ Charm และ Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* บังคับใช้ Sarabun ทั้งระบบ ยกเว้นจุดที่ระบุเป็น Charm */
         * { font-family: 'Sarabun', sans-serif !important; }
         .font-charm { font-family: 'Charm', cursive !important; }
+        /* คลาสสำหรับสีน้ำเงิน Charm */
+        .text-charm-blue { color: #1e3a8a !important; } 
         body { background-color: #f8fafc; margin: 0; padding: 0; }
         
         .loader-overlay {
@@ -192,19 +195,15 @@
 
         const SETTINGS = {
             sangha: {
-                org: "วัดศรีสว่างแดนดิน",
-                addr: "ตำบลสว่างแดนดิน อำเภอสว่างแดนดิน จังหวัดสกลนคร",
-                tax: "0994002071903",
-                signer: "พระครูยุตตธรรมานุศาน์ ยุตตธมโม",
-                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดศรีสว่างแดนดิน",
+                org: "วัดศรีสว่างแดนดิน ตำบลสว่างแดนดิน อำเภอ สว่างแดนดิน จังหวัด สกลนคร",
+                signer: "พระครูยุตตธรรมมานุศาสน์ ยุตตธัมโม",
+                role: "เจ้าอาวาสวัดศรีสว่างแดนดิน",
                 note: "กองทุนสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             },
             medical: {
-                org: "วัดภูตะคาม",
-                addr: "ตำบลท่าศิลา อำเภอส่องดาว จังหวัดสกลนคร",
-                tax: "0994002568336",
+                org: "วัดภูตะคาม ตำบลท่าศิลา อำเภอส่องดาว จังหวัดสกลนคร",
                 signer: "พระครูเมตตาสันตยาธิคุณ",
-                role: "ผู้มีอำนาจลงนาม เจ้าอาวาสวัดภูตะคาม",
+                role: "เจ้าอาวาสวัดภูตะคาม",
                 note: "กองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
             }
         };
@@ -288,7 +287,7 @@
             const printArea = document.getElementById('print-area');
 
             if (currentMode === 'ED') {
-                // พิมพ์ E-Donation
+                // พิมพ์ E-Donation (คงเดิม)
                 const now = new Date();
                 const timestamp = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
                 printArea.innerHTML = `
@@ -297,8 +296,8 @@
                             <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-12 w-auto mb-1 object-contain">
                             <div class="leading-tight">
                                 <h1 class="text-lg font-bold mb-0.5">${s.org}</h1>
-                                <p class="text-[8.5pt] text-gray-700">${s.addr}</p>
-                                <p class="text-[9.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span class="print-blue">${s.tax}</span></p>
+                                <p class="text-[8.5pt] text-gray-700"></p>
+                                <p class="text-[9.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span class="print-blue"></span></p>
                             </div>
                         </div>
                         <div class="text-right w-[38%]">
@@ -358,33 +357,58 @@
                     </div>
                 `;
             } else {
-                // พิมพ์ใบอนุโมทนาธรรมดา
+                // พิมพ์ใบอนุโมทนาธรรมดา (ปรับปรุงตามที่ขอ)
                 const dt = parseDate(row[5]);
                 printArea.innerHTML = `
-                    <div class="text-center">
-                        <div class="flex justify-between items-start mb-1">
-                            <div class="w-24"></div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Buddhism_dham_jak.svg" class="h-20 w-20 mx-auto">
-                            <div class="text-right text-[11pt] font-bold">เลขที่ ${toThaiNum(row[3])}</div>
+                    <div class="text-center font-sarabun relative">
+                        <!-- ตราธรรมจักร กึ่งกลาง -->
+                        <div class="mb-4 text-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Buddhism_dham_jak.svg/250px-Buddhism_dham_jak.svg.png" class="h-24 w-24 mx-auto">
                         </div>
-                        <h2 class="font-charm text-4xl font-bold mb-4">อนุโมทนาบัตร</h2>
-                        <div class="text-lg leading-relaxed space-y-2 px-6">
-                            <p class="font-bold text-xl">${s.org} ${s.addr}</p>
+
+                        <!-- เลขที่ ขวาบน (ใช้ฟอนต์ Charm สีน้ำเงิน) -->
+                        <div class="absolute top-2 right-2 text-[11pt] font-bold">
+                            เลขที่ <span class="font-charm text-charm-blue">${toThaiNum(row[3])}</span>
+                        </div>
+
+                        <!-- ชื่อวัด -->
+                        <p class="font-bold text-xl mb-2">${s.org}</p>
+
+                        <!-- หัวข้อ อนุโมทนาบัตร (สีน้ำเงิน Charm) -->
+                        <h2 class="font-charm text-4xl font-bold mb-4 text-charm-blue">อนุโมทนาบัตร</h2>
+
+                        <div class="text-lg leading-relaxed space-y-4 px-6">
                             <p class="text-lg">ขออนุโมทนา แด่</p>
-                            <p class="font-charm text-4xl font-bold text-blue-900 py-2">${row[6]}</p>
-                            <p class="text-xl">ได้บริจาคเงินจำนวน <span class="font-bold text-2xl border-b-2 border-black px-6 mx-2">${toThaiNum(Number(row[9]).toLocaleString())}</span> บาท</p>
-                            <p class="font-bold text-lg">(${row[10]})</p>
-                            <p class="text-[12pt] leading-tight pt-2">บริจาคเพื่อ ${row[8]}</p>
-                            <p class="text-[11pt] px-8 pt-4 leading-snug">
-                                ขออำนาจคุณพระศรีรัตนตรัย และบุญกุศลบำเพ็ญนี้ จงดลบันดาลให้ท่านและครอบครัวเจริญด้วยอายุ วรรณะ สุขะ พละ ปฏิภาณ ธนสานสมบัติ และประสบสิ่งอันพึงปรารถนา ตลอดกาลทุกเมื่อ เทอญ
+                            <!-- ชื่อผู้บริจาค (สีน้ำเงิน Charm) -->
+                            <p class="font-charm text-4xl font-bold text-charm-blue py-2">${row[6]}</p>
+
+                            <!-- จำนวนเงิน (จัดรูปแบบใหม่) -->
+                            <p class="text-xl">
+                                บริจาคเงินจำนวน
+                                <span class="font-charm text-2xl font-bold text-charm-blue px-2 mx-1 border-b-2 border-blue-900">${toThaiNum(Number(row[9]).toLocaleString())}</span>
+                                บาท
+                                <span class="font-charm text-xl font-bold text-charm-blue">(<span id="pc-amount-thai">${row[10]}</span>)</span>
                             </p>
+
+                            <!-- วัตถุประสงค์ -->
+                            <p class="text-[12pt] leading-tight pt-2">เพื่อสมทบทุน ${row[8]}</p>
+
+                            <!-- คำอวยพร -->
+                            <p class="text-[11pt] px-8 pt-4 leading-snug">
+                                ขออำนาจคุณพระศรีรัตนตรัย และบุญกุศลบำเพ็ญนี้ จงดลบันดาลให้ท่านและครอบครัวเจริญด้วยอายุ วรรณะ สุขะ พละ ปฏิภาณ ธนสานสมบัติ และประสบสิ่งอันพึงปรารถนา ตลอดกาลทุดเมื่อ เทอญ
+                            </p>
+
+                            <!-- วันที่ -->
                             <p class="pt-4 text-[13pt] font-bold">ณ วันที่ ${toThaiNum(dt.d)} เดือน ${thMonths[dt.m-1]} พุทธศักราช ${toThaiNum(dt.y)}</p>
                         </div>
-                        <div class="mt-8 flex flex-col items-center">
+
+                        <!-- ผู้ลงนาม -->
+                        <div class="mt-10 flex flex-col items-center">
                             <div class="text-center">
                                 <p class="font-bold text-2xl mb-1">(${s.signer})</p>
                                 <p class="text-[12pt] font-bold">${s.role}</p>
                             </div>
+                            <!-- ข้อความกำกับ -->
                             <p class="text-[8pt] text-gray-500 mt-6 italic">เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ</p>
                         </div>
                     </div>
