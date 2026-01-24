@@ -34,13 +34,14 @@
             #print-receipt {
                 display: block !important;
                 position: absolute; left: 0; top: 0; width: 210mm; height: 148mm;
-                padding: 12mm; background: white; color: black; font-size: 11.5pt;
-                line-height: 1.6;
+                padding: 10mm 12mm; background: white; color: black; font-size: 11.5pt;
+                line-height: 1.55;
+                visibility: visible;
             }
             .no-print { display: none !important; }
             .print-blue { color: #1e3a8a !important; }
-            /* กำจัดขอบเขต Font-mono เพื่อให้ทุกส่วนเป็น Sarabun */
-            .font-mono { font-family: 'Sarabun', sans-serif !important; }
+            /* บังคับทุกอย่างเป็น Sarabun ไม่ใช้ Mono */
+            .font-mono, .receipt-data { font-family: 'Sarabun', sans-serif !important; }
         }
 
         #print-receipt { display: none; }
@@ -48,71 +49,76 @@
 </head>
 <body>
 
-    <!-- Area สำหรับพิมพ์ใบเสร็จ (A5) -->
+    <!-- Area สำหรับพิมพ์ใบเสร็จ (A5 แนวนอน) -->
     <div id="print-receipt" class="font-sarabun text-black">
-        <div class="flex justify-between items-start border-b-2 border-black pb-3 mb-5">
-            <div class="flex gap-5 items-center">
-                <!-- แก้ไขโลโก้ให้ไม่บีบ -->
-                <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-20 w-auto object-contain">
+        <!-- Header Section -->
+        <div class="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
+            <div class="flex gap-4 items-center w-[65%]">
+                <img src="https://tippayarat.ac.th/wp-content/uploads/2023/01/icon-e-donation.png" class="h-24 w-auto object-contain">
                 <div>
                     <h1 class="text-2xl font-bold leading-tight" id="p-org-name">วัด...</h1>
                     <p class="text-[10.5pt] leading-snug" id="p-org-address">ตำบล/แขวง ... อำเภอ/เขต ... จังหวัด ...</p>
                     <p class="text-[10.5pt] font-bold">เลขที่หน่วยรับบริจาค: <span id="p-org-taxid" class="print-blue">...</span></p>
                 </div>
             </div>
-            <div class="text-right">
-                <h2 class="text-3xl font-bold text-[#1e3a8a]">ใบรับเงินบริจาค</h2>
-                <p class="text-[9pt] font-bold uppercase tracking-tight text-gray-500">e-Donation System (Revenue Dept.)</p>
-                <div class="mt-3 text-[10.5pt]">
+            <div class="text-right w-[35%]">
+                <h2 class="text-3xl font-bold text-[#1e3a8a] mb-1">ใบรับเงินบริจาค</h2>
+                <p class="text-[8.5pt] font-bold uppercase tracking-tight text-gray-500">E-DONATION SYSTEM (REVENUE DEPT.)</p>
+                <div class="mt-2 text-[10.5pt]">
                     <p>เลขที่อ้างอิง: <span id="p-receipt-no" class="font-bold print-blue">...</span></p>
                     <p>วันที่บริจาค: <span id="p-date" class="font-bold print-blue">...</span></p>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-5 my-8 px-2">
-            <div class="flex items-baseline gap-4">
-                <span class="w-40 font-bold whitespace-nowrap text-lg">ชื่อผู้บริจาค:</span>
-                <span class="flex-1 font-bold text-2xl print-blue leading-none" id="p-donor-name">...</span>
+        <!-- Body Section -->
+        <div class="space-y-4 my-6 px-1">
+            <div class="flex items-center">
+                <span class="w-36 font-bold text-[13pt]">ชื่อผู้บริจาค:</span>
+                <span class="flex-1 font-bold text-2xl print-blue" id="p-donor-name">...</span>
             </div>
-            <div class="flex items-baseline gap-4">
-                <span class="w-40 font-bold whitespace-nowrap text-lg">เลขประจำตัวผู้เสียภาษี:</span>
-                <span class="flex-1 text-xl font-bold print-blue leading-none tracking-wider" id="p-donor-taxid">...</span>
+            <div class="flex items-center">
+                <span class="w-36 font-bold text-[13pt]">เลขประจำตัวผู้เสียภาษี:</span>
+                <span class="flex-1 text-xl font-bold print-blue tracking-wider" id="p-donor-taxid">...</span>
             </div>
-            <div class="flex items-start gap-4">
-                <span class="w-40 font-bold whitespace-nowrap text-lg">บริจาคเพื่อ:</span>
-                <span class="flex-1 text-lg print-blue leading-tight" id="p-purpose">...</span>
+            <div class="flex items-start">
+                <span class="w-36 font-bold text-[13pt]">บริจาคเพื่อ:</span>
+                <span class="flex-1 text-lg print-blue leading-snug font-semibold" id="p-purpose">...</span>
             </div>
-            <div class="flex items-center gap-6 pt-2">
-                <div class="flex flex-1 items-baseline">
-                    <span class="w-40 font-bold whitespace-nowrap text-lg">จำนวนเงิน:</span>
-                    <span class="flex-1 font-bold text-3xl text-center print-blue border-b-2 border-black px-4" id="p-amount">0.00</span>
-                    <span class="ml-3 font-bold text-lg">บาท</span>
+            <div class="flex items-center gap-4 pt-1">
+                <div class="flex flex-1 items-center">
+                    <span class="w-36 font-bold text-[13pt]">จำนวนเงิน:</span>
+                    <span class="flex-1 font-bold text-3xl text-center print-blue border-b-2 border-black" id="p-amount">0.00</span>
+                    <span class="ml-4 font-bold text-lg">บาท</span>
                 </div>
-                <div class="flex flex-[1.4] items-baseline">
+                <div class="flex flex-[1.4] items-center ml-4">
                     <span class="flex-1 text-center font-bold text-xl print-blue border-b-2 border-black" id="p-amount-thai">...</span>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 mt-10 items-end px-2">
-            <div class="text-[9pt] leading-relaxed space-y-1.5 pr-6">
+        <!-- Footer Section -->
+        <div class="grid grid-cols-2 mt-8 items-end px-1">
+            <div class="text-[9pt] leading-relaxed space-y-1 pr-4">
                 <p class="font-bold underline text-[10pt]">หมายเหตุ:</p>
-                <p id="p-note-1" class="font-semibold text-gray-700 leading-tight">1. ...</p>
+                <p id="p-note-1" class="font-bold text-gray-700">1. ...</p>
                 <p>2. ข้อมูลบริจาคของท่านได้บันทึกในระบบ e-Donation ตรวจสอบได้ที่เว็บไซต์กรมสรรพากร (www.rd.go.th)</p>
                 <p>3. กรมสรรพากรเป็นเพียงผู้ให้บริการระบบ กรณีแก้ไขโปรดติดต่อหน่วยรับบริจาคโดยตรง</p>
-                <div class="pt-3 text-gray-400 text-[8pt]">
+                <div class="pt-4 text-gray-400 text-[8pt] italic font-medium">
                     <p>วันที่พิมพ์เอกสาร: <span id="p-print-timestamp">...</span></p>
                 </div>
             </div>
-            <div class="text-center space-y-1">
-                <div class="h-10"></div>
-                <p class="font-bold text-2xl leading-none print-blue mb-1" id="p-signer-full-name">(...)</p>
-                <p class="text-[12pt] font-bold">ผู้มีอำนาจลงนาม</p>
-                <p class="text-[8pt] text-gray-500 italic mt-4 leading-snug">
-                    เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
-                    ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
-                </p>
+            <div class="text-center">
+                <div class="mb-1">
+                    <p class="font-bold text-2xl print-blue leading-none mb-2" id="p-signer-full-name">(...)</p>
+                    <p class="text-[12pt] font-bold">ผู้มีอำนาจลงนาม</p>
+                </div>
+                <div class="mt-4">
+                    <p class="text-[8pt] text-gray-500 italic leading-snug">
+                        เอกสารนี้จัดทำในรูปแบบอิเล็กทรอนิกส์ จึงไม่มีลายมือชื่อกำกับ <br>
+                        ทั้งนี้ให้ถือว่าเอกสารดังกล่าวมีผลสมบูรณ์ตามข้อมูลที่ปรากฏ
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -121,7 +127,7 @@
     <div id="loader" class="loader-overlay">
         <div class="text-center">
             <div class="modern-spinner mx-auto mb-4"></div>
-            <p class="text-blue-700 font-bold text-lg animate-pulse">กำลังจัดการข้อมูล...</p>
+            <p class="text-blue-700 font-bold text-lg">กำลังจัดการข้อมูล...</p>
         </div>
     </div>
 
@@ -136,20 +142,16 @@
                     </div>
                 </div>
             </div>
-            <nav class="flex items-center gap-2 md:gap-3">
-                <button onclick="showSection('form')" class="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="plus-square" class="w-4 h-4"></i> <span class="hidden md:inline">บันทึกข้อมูล</span>
-                </button>
-                <button onclick="showSection('report')" class="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-xl transition text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="clipboard-list" class="w-4 h-4"></i> <span class="hidden md:inline">รายงาน</span>
-                </button>
-                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-3 md:px-5 py-2 rounded-xl transition font-bold shadow-lg text-sm">ออกจากระบบ</button>
+            <nav class="flex items-center gap-3">
+                <button onclick="showSection('form')" class="hover:bg-white/20 p-2 rounded-lg transition" title="บันทึกข้อมูล"><i data-lucide="plus-square"></i></button>
+                <button onclick="showSection('report')" class="hover:bg-white/20 p-2 rounded-lg transition" title="รายงาน"><i data-lucide="clipboard-list"></i></button>
+                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl font-bold transition shadow-lg text-sm">ออกจากระบบ</button>
             </nav>
         </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-6">
-        <!-- หน้าเลือกกองทุน -->
+        <!-- เลือกกองทุน -->
         <div id="fund-selection" class="flex flex-col items-center justify-center min-h-[80vh] text-center">
             <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-24 mb-6 drop-shadow-2xl">
             <h2 class="text-3xl font-black text-slate-800 mb-2">ยินดีต้อนรับเข้าสู่ระบบทะเบียนบริจาค</h2>
@@ -168,20 +170,17 @@
             </div>
         </div>
 
-        <!-- หน้าบันทึกข้อมูล -->
+        <!-- บันทึกข้อมูล -->
         <div id="section-form" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
             <div class="lg:col-span-7 bg-white rounded-3xl shadow-xl border overflow-hidden">
                 <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-center gap-4">
-                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                        <i data-lucide="archive" class="w-5 h-5"></i>
-                        <span id="table-title">ทะเบียนล่าสุด</span>
-                    </h3>
+                    <h3 class="font-bold text-slate-800 text-lg" id="table-title">ทะเบียนล่าสุด</h3>
                     <div class="relative w-full md:w-64">
                         <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="searchInput" oninput="filterTable()" placeholder="ค้นชื่่อ / เลขใบเสร็จ..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-full focus:ring-2 focus:ring-blue-400 outline-none">
+                        <input type="text" id="searchInput" oninput="filterTable()" placeholder="ค้นชื่อ / เลขใบเสร็จ..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-full focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
                 </div>
-                <div class="table-container overflow-y-auto max-h-[600px]">
+                <div class="table-container overflow-y-auto max-h-[550px]">
                     <table class="w-full text-left">
                         <thead class="bg-slate-800 text-white text-xs uppercase sticky top-0 z-10">
                             <tr>
@@ -196,7 +195,7 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-5 bg-white rounded-3xl shadow-2xl p-6 md:p-8 border-t-8 border-blue-600">
+            <div class="lg:col-span-5 bg-white rounded-3xl shadow-2xl p-8 border-t-8 border-blue-600">
                 <h3 id="form-title" class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📝 บันทึกข้อมูลใหม่</h3>
                 <form id="donationForm" class="space-y-4">
                     <input type="hidden" id="edit-id">
@@ -222,7 +221,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-black text-slate-500 mb-1 uppercase tracking-wider text-blue-600">จำนวนเงิน (บาท)</label>
-                        <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-3xl font-black text-blue-700 outline-none text-center">
+                        <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-2xl font-black text-blue-700 outline-none text-center">
                         <p id="amountThai" class="mt-2 text-sm text-blue-600 font-bold h-4 italic text-center"></p>
                     </div>
                     <button type="button" onclick="submitData()" id="submit-btn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 transition-all flex justify-center items-center gap-3">
@@ -234,7 +233,7 @@
         </div>
 
         <div id="section-report" class="hidden bg-white p-8 rounded-3xl shadow-xl">
-            <h2 class="text-2xl font-black mb-6">📑 รายงานข้อมูลทั้งหมด</h2>
+            <h2 class="text-2xl font-black mb-6">📑 รายงานข้อมูลสรุป</h2>
             <div id="full-report-content" class="text-slate-500 text-center py-20 italic">ส่วนรายงานสรุปกำลังเตรียมข้อมูล...</div>
         </div>
     </main>
@@ -275,7 +274,6 @@
                 document.getElementById('section-form').classList.remove('hidden');
                 document.getElementById('header-fund-name').innerText = fundNameFull;
                 document.getElementById('table-title').innerText = "ทะเบียนรับบริจาค" + fundNameFull;
-                
                 resetForm();
                 loadReport();
                 toggleLoader(false);
@@ -289,34 +287,28 @@
             lucide.createIcons();
         }
 
-        // ปรับแต่งการแสดงวันที่ย่อในตาราง
+        // ฟอร์แมตวันที่แบบย่อสำหรับตาราง
         function formatDateShort(str) {
             if(!str) return "-";
-            // ถ้ามาเป็น ISO String เช่น 2569-01-23T...
             if(str.includes('T')) {
-                const datePart = str.split('T')[0]; // ดึงเฉพาะ YYYY-MM-DD
-                const parts = datePart.split('-');
-                if(parts.length === 3) {
-                    return `${parts[2]}/${parts[1]}/${parts[0]}`; // คืนค่า DD/MM/YYYY
-                }
+                const parts = str.split('T')[0].split('-');
+                if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
             return str;
         }
 
+        // ฟอร์แมตวันที่แบบเต็มสำหรับใบเสร็จ
         function formatDateThaiFull(dateStr) {
             if (!dateStr) return "-";
             const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             let d, m, y;
             if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                d = parts[0]; m = parts[1]; y = parts[2];
+                const p = dateStr.split('/');
+                d = p[0]; m = p[1]; y = p[2];
             } else if (dateStr.includes('-') || dateStr.includes('T')) {
-                const datePart = dateStr.split('T')[0];
-                const parts = datePart.split('-');
-                d = parts[2]; m = parts[1]; y = parts[0];
-            } else {
-                return dateStr;
-            }
+                const p = dateStr.split('T')[0].split('-');
+                d = p[2]; m = p[1]; y = p[0];
+            } else return dateStr;
             return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
         }
 
@@ -329,7 +321,7 @@
 
             const s = SETTINGS[currentFund];
             const now = new Date();
-            const timestamp = now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' }) + ' ' + now.toLocaleTimeString('th-TH');
+            const timestamp = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
             
             document.getElementById('p-org-name').innerText = s.org;
             document.getElementById('p-org-address').innerText = s.addr;
@@ -362,7 +354,7 @@
             };
 
             if(!data.receiptNo || !data.name || !data.amount) {
-                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่จำเป็น', 'warning');
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขที่รับเงิน ชื่อ และจำนวนเงิน', 'warning');
                 return;
             }
 
@@ -375,7 +367,9 @@
                 Swal.fire({ icon: 'success', title: 'สำเร็จ!', showConfirmButton: false, timer: 1500 });
                 resetForm();
                 loadReport();
-            } catch (e) { Swal.fire('เกิดข้อผิดพลาด', 'โปรดลองอีกครั้ง', 'error'); }
+            } catch (e) {
+                Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+            }
             toggleLoader(false);
         }
 
@@ -384,18 +378,18 @@
                 const res = await fetch(`${API_URL}?action=getReport&fundType=${fundNameFull}`);
                 records = await res.json();
                 renderTable(records);
-            } catch (e) { console.error("Data Fetching Error"); }
+            } catch (e) { console.error("Load Error"); }
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('quick-table');
             tbody.innerHTML = [...data].reverse().map(row => `
-                <tr class="hover:bg-blue-50 transition border-b">
+                <tr class="hover:bg-blue-50 transition border-b group">
                     <td class="p-4 text-xs font-bold text-slate-500">${formatDateShort(row[3])}</td>
                     <td class="p-4 font-normal text-xs text-slate-400">${row[2]}</td>
                     <td class="p-4 font-bold text-slate-800">${row[4]}</td>
                     <td class="p-4 flex justify-center gap-1">
-                        <button onclick="printRecord('${row[0]}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="พิมพ์ใบรับเงิน"><i data-lucide="printer" class="w-4 h-4"></i></button>
+                        <button onclick="printRecord('${row[0]}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="พิมพ์"><i data-lucide="printer" class="w-4 h-4"></i></button>
                         <button onclick="editRecord('${row[0]}')" class="p-2 text-amber-500 hover:bg-amber-100 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="deleteRecord('${row[0]}')" class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
@@ -416,7 +410,6 @@
             document.getElementById('purpose').value = row[6];
             document.getElementById('amount').value = row[7];
             updateThaiText(row[7]);
-            
             document.getElementById('form-title').innerText = "✏️ แก้ไขข้อมูล";
             document.getElementById('submit-btn').querySelector('span').innerText = "อัปเดตข้อมูล";
             document.getElementById('cancel-btn').classList.remove('hidden');
@@ -424,10 +417,7 @@
         }
 
         async function deleteRecord(id) {
-            const confirm = await Swal.fire({ 
-                title: 'ยืนยันการลบ?', text: 'ข้อมูลรายการนี้จะหายไปจากระบบทันที', icon: 'warning', 
-                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ยืนยันลบ'
-            });
+            const confirm = await Swal.fire({ title: 'ยืนยันการลบ?', icon: 'warning', showCancelButton: true });
             if(!confirm.isConfirmed) return;
             toggleLoader(true);
             try {
