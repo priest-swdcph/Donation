@@ -6,6 +6,8 @@
     <title>ระบบทะเบียนรับบริจาค รพร.สว่างแดนดิน</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
@@ -17,22 +19,19 @@
         }
 
         .modern-spinner {
-            width: 64px; height: 64px;
-            border: 6px solid #e2e8f0;
-            border-top: 6px solid #2563eb;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            width: 64px; height: 64px; border: 6px solid #e2e8f0; border-top: 6px solid #2563eb;
+            border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .glass-header {
-            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-        }
-
+        .glass-header { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); }
         .fund-card:hover { transform: translateY(-10px); }
         .table-container::-webkit-scrollbar { width: 6px; }
         .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Animation for Edit Mode */
+        .edit-mode-active { border-color: #f59e0b !important; background-color: #fffbeb !important; }
     </style>
 </head>
 <body>
@@ -58,48 +57,55 @@
                 </div>
             </div>
             <nav class="flex items-center gap-2">
-                <button onclick="showSection('form')" class="px-4 py-2 hover:bg-white/20 rounded-xl transition font-medium">บันทึกข้อมูล</button>
-                <button onclick="showSection('report')" class="px-4 py-2 hover:bg-white/20 rounded-xl transition font-medium">รายงาน</button>
-                <button onclick="showSection('settings')" class="px-4 py-2 hover:bg-white/20 rounded-xl transition font-medium">ตั้งค่า</button>
-                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl transition font-bold shadow-lg">ออกจากระบบ</button>
+                <button onclick="showSection('form')" class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 rounded-xl transition font-medium">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> บันทึกข้อมูล
+                </button>
+                <button onclick="showSection('report')" class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 rounded-xl transition font-medium">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> รายงาน
+                </button>
+                <button onclick="location.reload()" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl transition font-bold shadow-lg">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> ออก
+                </button>
             </nav>
         </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-6">
         
-        <!-- 1. หน้าเลือกกองทุน (Splash Screen) -->
+        <!-- 1. หน้าเลือกกองทุน -->
         <div id="fund-selection" class="flex flex-col items-center justify-center min-h-[85vh] text-center">
             <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_1.jpg" class="h-24 mb-6 drop-shadow-2xl">
             <h2 class="text-3xl font-bold text-slate-800 mb-2">ยินดีต้อนรับเข้าสู่ระบบทะเบียนบริจาค</h2>
             <p class="text-slate-500 mb-10 text-lg">รพ.สมเด็จพระยุพราชสว่างแดนดิน จ.สกลนคร</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                <!-- กองทุนสงฆ์ -->
                 <div onclick="selectFund('sangha')" class="fund-card cursor-pointer bg-white p-8 rounded-[2rem] shadow-2xl transition-all border-t-[12px] border-orange-500 hover:shadow-orange-200">
                     <img src="https://img5.pic.in.th/file/secure-sv1/LOGO-cafca2d6a59fd064.png" class="h-32 mx-auto mb-6">
                     <h3 class="text-2xl font-black text-orange-600 uppercase tracking-tight">กองทุนสงฆ์อาพาธ</h3>
-                    <p class="text-slate-400 text-sm mt-2">จัดการทะเบียนรับบริจาคเพื่อหอสงฆ์</p>
                 </div>
-                <!-- กองทุนเครื่องมือแพทย์ -->
                 <div onclick="selectFund('medical')" class="fund-card cursor-pointer bg-white p-8 rounded-[2rem] shadow-2xl transition-all border-t-[12px] border-blue-600 hover:shadow-blue-200">
                     <img src="https://img2.pic.in.th/LINE_ALBUM_442025_260124_2.jpg" class="h-32 mx-auto mb-6">
                     <h3 class="text-2xl font-black text-blue-700 uppercase tracking-tight">กองทุนเครื่องมือแพทย์</h3>
-                    <p class="text-slate-400 text-sm mt-2">จัดการทะเบียนรับบริจาคเครื่องมือแพทย์</p>
                 </div>
             </div>
         </div>
 
-        <!-- 2. หน้าหลัก (Split Screen: Table + Form) -->
+        <!-- 2. หน้าหลัก (Split Screen) -->
         <div id="section-form" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             <!-- ฝั่งซ้าย: ทะเบียนข้อมูล -->
             <div class="lg:col-span-7 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <h3 class="font-black text-xl text-slate-800">
-                        📋 <span id="table-title-fund">ทะเบียนรับบริจาค</span>
-                    </h3>
-                    <div class="text-sm font-bold text-blue-600" id="record-count">0 รายการ</div>
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <h3 class="font-black text-xl text-slate-800">
+                            📋 <span id="table-title-fund">ทะเบียนรับบริจาค</span>
+                        </h3>
+                        <div class="relative w-full md:w-64">
+                            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="searchInput" oninput="filterQuickTable()" placeholder="ค้นชื่่อ / เลขที่ใบรับเงิน..." 
+                                   class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                    </div>
                 </div>
                 <div class="table-container overflow-y-auto max-h-[600px]">
                     <table class="w-full text-left">
@@ -111,21 +117,23 @@
                                 <th class="p-4 font-semibold text-center">จัดการ</th>
                             </tr>
                         </thead>
-                        <tbody id="quick-table-body" class="divide-y divide-slate-100">
-                            <!-- Data will be loaded here -->
-                        </tbody>
+                        <tbody id="quick-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
 
             <!-- ฝั่งขวา: ฟอร์มบันทึก -->
-            <div class="lg:col-span-5 bg-white rounded-3xl shadow-2xl border-t-[10px] border-blue-600 p-8">
-                <h3 class="text-2xl font-black text-slate-800 mb-6 border-b pb-4">📝 เพิ่มข้อมูลใหม่</h3>
+            <div id="form-container" class="lg:col-span-5 bg-white rounded-3xl shadow-2xl border-t-[10px] border-blue-600 p-8 transition-colors duration-500">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 id="form-header-text" class="text-2xl font-black text-slate-800">📝 เพิ่มข้อมูลใหม่</h3>
+                    <button id="cancel-edit-btn" onclick="resetFormToNormal()" class="hidden text-red-500 text-xs font-bold hover:underline">ยกเลิกการแก้ไข</button>
+                </div>
                 <form id="donationForm" class="space-y-5">
+                    <input type="hidden" id="edit-id">
                     <div class="grid grid-cols-1 gap-5">
                         <div>
                             <label class="block text-xs font-black text-slate-500 uppercase mb-1">เลขที่รับเงิน (E-DONATION)</label>
-                            <input type="text" id="receiptNo" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" placeholder="ระบุเลขที่จากระบบ" required>
+                            <input type="text" id="receiptNo" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none transition" required>
                         </div>
                         <div>
                             <label class="block text-xs font-black text-slate-500 uppercase mb-1">วันที่บริจาค (พ.ศ.)</label>
@@ -145,18 +153,18 @@
                         </div>
                         <div>
                             <label class="block text-xs font-black text-slate-500 uppercase mb-1">จำนวนเงิน (บาท)</label>
-                            <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-2xl font-black text-blue-700 focus:ring-4 focus:ring-blue-100 outline-none" placeholder="0.00">
-                            <p id="amountThai" class="mt-2 text-sm text-blue-500 font-bold"></p>
+                            <input type="number" id="amount" oninput="updateThaiText(this.value)" class="w-full p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl text-2xl font-black text-blue-700 outline-none" placeholder="0.00">
+                            <p id="amountThai" class="mt-2 text-sm text-blue-600 font-bold h-5"></p>
                         </div>
                     </div>
-                    <button type="button" onclick="submitData()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all flex justify-center items-center gap-3">
-                        💾 บันทึกข้อมูลบริจาค
+                    <button type="button" id="submit-btn" onclick="handleFormSubmit()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all flex justify-center items-center gap-3">
+                        <i data-lucide="save" class="w-6 h-6"></i> <span id="btn-text">บันทึกข้อมูลบริจาค</span>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- 3. หน้ารายงาน (Full Report) -->
+        <!-- 3. หน้ารายงาน -->
         <div id="section-report" class="hidden bg-white rounded-3xl shadow-xl p-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-blue-50 p-6 rounded-2xl border border-blue-100">
                 <h2 class="text-2xl font-black text-blue-900">🔍 ค้นหารายงานการรับบริจาค</h2>
@@ -169,7 +177,9 @@
                         <label class="block text-xs font-bold mb-1">ถึงวันที่</label>
                         <input type="date" id="endDate" class="p-2.5 border rounded-xl shadow-sm">
                     </div>
-                    <button onclick="loadReport()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg">ค้นหา</button>
+                    <button onclick="loadReport()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i> ค้นหา
+                    </button>
                 </div>
             </div>
             <div class="overflow-x-auto rounded-2xl border border-slate-200">
@@ -179,7 +189,6 @@
                             <th class="p-4">วันที่</th>
                             <th class="p-4">เลขที่ใบรับเงิน</th>
                             <th class="p-4">ชื่อ-สกุล</th>
-                            <th class="p-4">เลขประจำตัวภาษี</th>
                             <th class="p-4 text-right">จำนวนเงิน</th>
                             <th class="p-4 text-center">จัดการ</th>
                         </tr>
@@ -189,83 +198,80 @@
             </div>
         </div>
 
-        <!-- 4. หน้าตั้งค่า (Settings) -->
-        <div id="section-settings" class="hidden max-w-4xl mx-auto">
-            <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
-                <h2 class="text-3xl font-black text-slate-800 mb-8 border-b pb-6 flex items-center gap-3">
-                    ⚙️ ตั้งค่าข้อมูลหน่วยรับบริจาค
-                </h2>
-                <div id="settings-content" class="space-y-6 text-slate-600">
-                    <!-- โหลดข้อมูลจาก JS -->
-                    <p class="animate-pulse">กำลังโหลดข้อมูลตั้งค่า...</p>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <script>
-        // *** สำคัญ: เปลี่ยน URL นี้ให้เป็น URL จากการ Deploy Google Apps Script ของคุณ ***
         const API_URL = "https://script.google.com/macros/s/AKfycby-y6yAxJfU_0odsmq5OTpTir62XNjXqwR9a4oI0py9pTYnW5qu3jvYPpj8P3pH5Pex/exec"; 
         
         let currentFund = "";
         let fundNameFull = "";
+        let rawDataList = []; // เก็บข้อมูลที่โหลดมาเพื่อการค้นหา
+        let isEditMode = false;
 
-        // จัดการเปิด/ปิด Loader
         function toggleLoader(show) {
             document.getElementById('loader').style.display = show ? 'flex' : 'none';
         }
 
-        // เลือกกองทุน
+        // ฟังก์ชันจัดฟอร์แมตวันที่จาก ISO หรือ String ให้เป็น DD/MM/YYYY
+        function formatDateThai(dateStr) {
+            if (!dateStr) return "-";
+            try {
+                // กรณีมาเป็น ISO String เช่น 2569-01-23T...
+                if (dateStr.includes('T')) {
+                    const date = new Date(dateStr);
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getFullYear(); // ตัวปี พ.ศ. จะมาอยู่แล้วถ้าบันทึกไปเป็น พ.ศ.
+                    return `${day}/${month}/${year}`;
+                }
+                return dateStr; // ถ้าเป็น DD/MM/YYYY อยู่แล้วก็ส่งกลับเลย
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
         function selectFund(type) {
             toggleLoader(true);
             setTimeout(() => {
                 currentFund = type;
                 fundNameFull = type === 'sangha' ? 'กองทุนสงฆ์อาพาธ' : 'กองทุนเครื่องมือแพทย์';
+                resetFormToNormal();
                 
-                // ปรับ UI ตามกองทุนที่เลือก
                 document.getElementById('fund-selection').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
                 document.getElementById('section-form').classList.remove('hidden');
                 
-                const headerFundName = document.getElementById('header-fund-name');
-                const fundBadge = document.getElementById('fund-badge');
-                const tableTitle = document.getElementById('table-title-fund');
-                
-                headerFundName.innerText = fundNameFull;
-                tableTitle.innerText = "ทะเบียนรับบริจาค" + fundNameFull;
+                document.getElementById('header-fund-name').innerText = fundNameFull;
+                document.getElementById('table-title-fund').innerText = "ทะเบียนรับบริจาค" + fundNameFull;
 
                 if(type === 'sangha') {
-                    fundBadge.style.backgroundColor = 'rgba(249, 115, 22, 0.4)'; // Orange
                     document.getElementById('purpose').value = "สมทบทุนกองทุนหอสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
                 } else {
-                    fundBadge.style.backgroundColor = 'rgba(37, 99, 235, 0.4)'; // Blue
                     document.getElementById('purpose').value = "สมทบทุนกองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
                 }
 
-                // ตั้งค่าวันที่ปัจจุบัน (พ.ศ.)
                 const d = new Date();
                 const thaiYear = d.getFullYear() + 543;
-                document.getElementById('dateInput').value = `${d.getDate()}/${d.getMonth()+1}/${thaiYear}`;
+                document.getElementById('dateInput').value = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${thaiYear}`;
                 
-                loadReport(); // ดึงข้อมูลมาแสดงในตาราง
-                loadSettings(); // ดึงค่าตั้งค่า
+                loadReport();
                 toggleLoader(false);
+                lucide.createIcons();
             }, 600);
         }
 
-        // สลับ Tab
         function showSection(name) {
-            ['form', 'report', 'settings'].forEach(s => {
+            ['form', 'report'].forEach(s => {
                 document.getElementById('section-' + s).classList.add('hidden');
             });
             document.getElementById('section-' + name).classList.remove('hidden');
             if(name === 'report') loadReport();
+            lucide.createIcons();
         }
 
-        // บันทึกข้อมูล
-        async function submitData() {
+        async function handleFormSubmit() {
             const formData = {
+                id: document.getElementById('edit-id').value,
                 fundType: fundNameFull,
                 receiptNo: document.getElementById('receiptNo').value,
                 date: document.getElementById('dateInput').value,
@@ -273,143 +279,225 @@
                 taxId: document.getElementById('taxId').value,
                 purpose: document.getElementById('purpose').value,
                 amount: document.getElementById('amount').value,
-                amountThai: document.getElementById('amountThai').innerText,
-                note: ""
+                amountThai: document.getElementById('amountThai').innerText
             };
 
             if(!formData.receiptNo || !formData.name || !formData.amount) {
-                return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขที่ใบรับเงิน ชื่อ และจำนวนเงิน', 'warning');
+                return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกฟิลด์ที่จำเป็น', 'warning');
             }
+
+            const action = isEditMode ? 'update' : 'save';
+            const confirmText = isEditMode ? 'อัปเดตข้อมูล?' : 'ยืนยันบันทึกข้อมูล?';
+
+            const confirm = await Swal.fire({
+                title: confirmText,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ตกลง',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!confirm.isConfirmed) return;
 
             toggleLoader(true);
             try {
-                // ส่งข้อมูลไปยัง GAS (เนื่องจากเป็น POST ข้าม Domain มักจะติด CORS จึงใช้ mode: no-cors ในกรณีไม่ต้องการ Response ทันที)
-                // แต่ถ้าต้องการเช็ค Success ให้ใช้การเขียน fetch แบบส่ง JSON string
                 await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'save', data: formData })
+                    body: JSON.stringify({ action: action, data: formData })
                 });
                 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'บันทึกสำเร็จ',
-                    text: 'ข้อมูลถูกส่งไปยังระบบฐานข้อมูลแล้ว',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-                document.getElementById('donationForm').reset();
-                selectFund(currentFund); // รีเซ็ตฟอร์มและรีโหลดตาราง
+                Swal.fire({ icon: 'success', title: 'สำเร็จ', timer: 1500, showConfirmButton: false });
+                resetFormToNormal();
+                loadReport();
             } catch (error) {
-                Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+                Swal.fire('Error', 'ไม่สามารถเชื่อมต่อได้', 'error');
             }
             toggleLoader(false);
         }
 
-        // ดึงข้อมูลรายงาน
+        function filterQuickTable() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = rawDataList.filter(row => 
+                row[4].toLowerCase().includes(keyword) || row[2].toLowerCase().includes(keyword)
+            );
+            renderTable(filtered);
+        }
+
         async function loadReport() {
             try {
                 const response = await fetch(`${API_URL}?action=getReport&fundType=${fundNameFull}`);
-                const data = await response.json();
-                
-                // อัปเดตตารางสรุปฝั่งซ้าย (5 รายการล่าสุด)
-                const quickTbody = document.getElementById('quick-table-body');
-                const recentData = [...data].reverse().slice(0, 10);
-                
-                document.getElementById('record-count').innerText = data.length + " รายการ";
-
-                quickTbody.innerHTML = recentData.map(row => `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 text-slate-600 font-medium">${row[3]}</td>
-                        <td class="p-4 font-mono text-sm">${row[2]}</td>
-                        <td class="p-4 font-bold text-slate-800">${row[4]}</td>
-                        <td class="p-4 text-center space-x-2">
-                            <button class="text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition" title="พิมพ์">🖨️</button>
-                            <button class="text-amber-500 hover:bg-amber-100 p-2 rounded-lg transition" title="แก้ไข">✏️</button>
-                            <button class="text-red-500 hover:bg-red-100 p-2 rounded-lg transition" title="ลบ">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                // อัปเดตตารางหน้า Report
-                document.getElementById('full-report-body').innerHTML = data.reverse().map(row => `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4">${row[3]}</td>
-                        <td class="p-4 font-mono">${row[2]}</td>
-                        <td class="p-4 font-bold">${row[4]}</td>
-                        <td class="p-4 text-xs text-slate-500">${row[5] || '-'}</td>
-                        <td class="p-4 text-right font-black text-blue-700">${Number(row[7]).toLocaleString()}</td>
-                        <td class="p-4 text-center">
-                            <button class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">PDF</button>
-                        </td>
-                    </tr>
-                `).join('');
-
+                rawDataList = await response.json();
+                renderTable(rawDataList);
             } catch (error) {
-                console.log("No data available yet or API Error");
+                console.log("Error loading data");
             }
         }
 
-        // โหลดตั้งค่าหน่วยบริจาค
-        function loadSettings() {
-            const container = document.getElementById('settings-content');
-            const sanghaSettings = {
-                org: "วัดศรีสว่างแดนดิน",
-                addr: "ตำบล/แขวง สว่างแดนดิน อำเภอ/เขต สว่างแดนดิน จังหวัด สกลนคร",
-                tax: "0994002071903",
-                signer: "พระครูยุตตธรรมมานุศาสน์",
-                role: "กองทุนสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
-            };
-            const medicalSettings = {
-                org: "วัดป่าสันตินิมิต",
-                addr: "ตำบล/แขวง เป๊าะ อำเภอ/เขต บึงบูรพ์ จังหวัด ศรีสะเกษ",
-                tax: "0994002568336",
-                signer: "พระครูเมตตาสันตยาธิคุณ",
-                role: "กองทุนเพื่อจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน ผู้รับมอบอำนาจจากหน่วยบริจาค"
-            };
+        function renderTable(data) {
+            const tbody = document.getElementById('quick-table-body');
+            const sortedData = [...data].reverse();
+            
+            tbody.innerHTML = sortedData.map(row => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 text-slate-600 font-medium text-xs md:text-sm">${formatDateThai(row[3])}</td>
+                    <td class="p-4 font-mono text-xs">${row[2]}</td>
+                    <td class="p-4 font-bold text-slate-800 text-sm">${row[4]}</td>
+                    <td class="p-4 text-center flex justify-center gap-1 md:gap-3">
+                        <button onclick="editRecord('${row[0]}')" class="text-amber-500 hover:bg-amber-100 p-2 rounded-lg transition" title="แก้ไข">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteRecord('${row[0]}')" class="text-red-500 hover:bg-red-100 p-2 rounded-lg transition" title="ลบ">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <button class="text-blue-500 hover:bg-blue-100 p-2 rounded-lg transition" title="พิมพ์">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
 
-            const s = currentFund === 'sangha' ? sanghaSettings : medicalSettings;
-
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-2">
-                        <label class="font-bold text-slate-800">ชื่อหน่วยรับบริจาค</label>
-                        <p class="p-4 bg-slate-50 rounded-2xl border">${s.org}</p>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="font-bold text-slate-800">เลขที่หน่วยรับบริจาค</label>
-                        <p class="p-4 bg-slate-50 rounded-2xl border font-mono">${s.tax}</p>
-                    </div>
-                    <div class="md:col-span-2 space-y-2">
-                        <label class="font-bold text-slate-800">ที่อยู่</label>
-                        <p class="p-4 bg-slate-50 rounded-2xl border">${s.addr}</p>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="font-bold text-slate-800">ผู้มีอำนาจลงนาม</label>
-                        <p class="p-4 bg-slate-50 rounded-2xl border">${s.signer}</p>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="font-bold text-slate-800">ตำแหน่ง/หน้าที่</label>
-                        <p class="p-4 bg-slate-50 rounded-2xl border text-sm">${s.role}</p>
-                    </div>
-                </div>
-                <div class="mt-8 p-6 bg-amber-50 border border-amber-200 rounded-3xl text-sm italic">
-                    <p class="font-bold mb-2">หมายเหตุการบริจาค:</p>
-                    <p>1. ข้อมูลบริจาคของท่านได้บันทึกไว้ในระบบบริจาคอิเล็กทรอนิกส์ (e-Donation) ตรวจสอบได้ที่เว็บไซต์กรมสรรพากร (www.rd.go.th)</p>
-                    <p>2. กรมสรรพากรเป็นเพียงผู้ให้บริการระบบ กรณีต้องการแก้ไขโปรดติดต่อหน่วยรับบริจาคนี้</p>
-                </div>
-            `;
+            document.getElementById('full-report-body').innerHTML = sortedData.map(row => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4">${formatDateThai(row[3])}</td>
+                    <td class="p-4 font-mono">${row[2]}</td>
+                    <td class="p-4 font-bold">${row[4]}</td>
+                    <td class="p-4 text-right font-black text-blue-700">${Number(row[7]).toLocaleString()}</td>
+                    <td class="p-4 text-center">
+                        <button class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">PDF</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            lucide.createIcons();
         }
 
-        // แปลงตัวเลขเป็นอักษรบาทถ้วน (ตัวอย่างเบื้องต้น)
+        function editRecord(id) {
+            const record = rawDataList.find(r => r[0].toString() === id.toString());
+            if (!record) return;
+
+            isEditMode = true;
+            document.getElementById('edit-id').value = record[0];
+            document.getElementById('receiptNo').value = record[2];
+            document.getElementById('dateInput').value = formatDateThai(record[3]);
+            document.getElementById('donorName').value = record[4];
+            document.getElementById('taxId').value = record[5];
+            document.getElementById('purpose').value = record[6];
+            document.getElementById('amount').value = record[7];
+            updateThaiText(record[7]);
+
+            // UI Changes
+            document.getElementById('form-container').classList.add('edit-mode-active');
+            document.getElementById('form-header-text').innerText = "✏️ แก้ไขข้อมูล";
+            document.getElementById('btn-text').innerText = "อัปเดตข้อมูลการบริจาค";
+            document.getElementById('submit-btn').classList.replace('bg-blue-600', 'bg-amber-500');
+            document.getElementById('submit-btn').classList.replace('hover:bg-blue-700', 'hover:bg-amber-600');
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteRecord(id) {
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "ข้อมูลจะหายไปถาวร ไม่สามารถกู้คืนได้",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'ลบทันที',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            toggleLoader(true);
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'delete', data: { id: id } })
+                });
+                Swal.fire('Deleted!', 'ลบข้อมูลสำเร็จ', 'success');
+                loadReport();
+            } catch (e) {
+                Swal.fire('Error', 'ไม่สามารถลบข้อมูลได้', 'error');
+            }
+            toggleLoader(false);
+        }
+
+        function resetFormToNormal() {
+            isEditMode = false;
+            document.getElementById('donationForm').reset();
+            document.getElementById('edit-id').value = "";
+            document.getElementById('form-container').classList.remove('edit-mode-active');
+            document.getElementById('form-header-text').innerText = "📝 เพิ่มข้อมูลใหม่";
+            document.getElementById('btn-text').innerText = "บันทึกข้อมูลบริจาค";
+            document.getElementById('submit-btn').classList.replace('bg-amber-500', 'bg-blue-600');
+            document.getElementById('submit-btn').classList.replace('hover:bg-amber-600', 'hover:bg-blue-700');
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            document.getElementById('amountThai').innerText = "";
+            
+            // Set Default Purpose back
+            if(currentFund === 'sangha') {
+                document.getElementById('purpose').value = "สมทบทุนกองทุนหอสงฆ์อาพาธ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
+            } else {
+                document.getElementById('purpose').value = "สมทบทุนกองทุนจัดซื้อเครื่องมือแพทย์ โรงพยาบาลสมเด็จพระยุพราชสว่างแดนดิน";
+            }
+            
+            // Default Date back
+            const d = new Date();
+            const thaiYear = d.getFullYear() + 543;
+            document.getElementById('dateInput').value = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${thaiYear}`;
+        }
+
+        function arabicToThaiText(number) {
+            const digits = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+            const units = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+            if (number == 0) return "ศูนย์บาทถ้วน";
+            let numberStr = number.toString();
+            let [integerPart, decimalPart] = numberStr.split('.');
+            let result = "";
+            if (integerPart) {
+                let len = integerPart.length;
+                for (let i = 0; i < len; i++) {
+                    let digit = parseInt(integerPart[i]);
+                    let pos = len - i - 1;
+                    if (digit !== 0) {
+                        if (pos % 6 === 1 && digit === 1) result += "";
+                        else if (pos % 6 === 1 && digit === 2) result += "ยี่";
+                        else if (pos % 6 === 0 && digit === 1 && i > 0) result += "เอ็ด";
+                        else result += digits[digit];
+                        result += units[pos % 6];
+                    }
+                    if (pos % 6 === 0 && pos > 0) result += "ล้าน";
+                }
+                result += "บาท";
+            }
+            if (!decimalPart || decimalPart === "00" || parseInt(decimalPart) === 0) result += "ถ้วน";
+            else {
+                decimalPart = decimalPart.length === 1 ? decimalPart + "0" : decimalPart.substring(0, 2);
+                let decLen = decimalPart.length;
+                for (let i = 0; i < decLen; i++) {
+                    let digit = parseInt(decimalPart[i]);
+                    let pos = decLen - i - 1;
+                    if (digit !== 0) {
+                        if (pos === 1 && digit === 1) result += "";
+                        else if (pos === 1 && digit === 2) result += "ยี่";
+                        else if (pos === 0 && digit === 1 && i > 0) result += "เอ็ด";
+                        else result += digits[digit];
+                        result += (pos === 1) ? "สิบ" : "สตางค์";
+                    }
+                }
+            }
+            return result;
+        }
+
         function updateThaiText(num) {
-            if(!num) {
-                document.getElementById('amountThai').innerText = "";
-                return;
-            }
-            // ในทางปฏิบัติควรใช้ Function สำหรับแปลงภาษาไทยที่สมบูรณ์
-            document.getElementById('amountThai').innerText = "(" + Number(num).toLocaleString() + " บาทถ้วน)";
+            const display = document.getElementById('amountThai');
+            if(!num || isNaN(num)) { display.innerText = ""; return; }
+            display.innerText = "(" + arabicToThaiText(parseFloat(num)) + ")";
         }
+
+        // Initialize Icons
+        window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
